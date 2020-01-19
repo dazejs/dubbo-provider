@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+
+# IDE
+/.idea
+/.awcache
+/.vscode
+*.code-workspace
+
+# dist
+/dist
+
+
+# logs
+logs/*.log
+**/logs/**.log
+
+# misc
+.DS_Store
+lerna-debug.log
+npm-debug.log
+yarn-error.log
+/__debug__
+.clinic
+
+# test
+/coverage
+
+# future and deprecated
+FUTURE_*
+DEPRECATED_*
+
+# dev example
+__example__
