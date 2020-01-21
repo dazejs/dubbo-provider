@@ -161,7 +161,6 @@ export class Invoker {
         _pickPrivoder = provider;
       }
     }
-    console.log(providers.map(provider => provider.workload));
     return _pickPrivoder.invoke(method, args) as Promise<T>;
   }
 

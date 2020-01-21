@@ -1,6 +1,6 @@
 
 import Hessian from 'hessian.js';
-import { Bytes } from '../common';
+import { Bytes } from '../../common';
 
 //header length
 const DUBBO_HEADER_LENGTH = 16;
@@ -183,6 +183,7 @@ export class Encoder {
         desc.push(';');
       }
     }
+    console.log(desc.join(''));
     return desc.join('');
   }
 }

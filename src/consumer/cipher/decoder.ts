@@ -1,7 +1,7 @@
 
 import Hessian from 'hessian.js';
-import { Heartbeat } from '../heartbeat';
-import { Bytes } from '../common';
+import { Heartbeat } from '../../heartbeat';
+import { Bytes } from '../../common';
 
 const DUBBO_HEADER_LENGTH = 16;
 const DUBBO_MAGIC_HIGH = 0xda;

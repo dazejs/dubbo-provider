@@ -1,8 +1,8 @@
 import * as net from 'net';
 import * as url from 'url';
 import { Invoker } from './invoker';
-import { Encoder } from '../cipher/encoder';
-import { Decoder } from '../cipher/decoder';
+import { Encoder } from './cipher/encoder';
+import { Decoder } from './cipher/decoder';
 import { Heartbeat } from '../heartbeat';
 
 export class Channel {

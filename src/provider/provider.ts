@@ -1,7 +1,7 @@
 import * as net from 'net';
 import { Registry } from '../registry/registry';
 import { Service, ProviderServiceOption } from './service';
-import { Decoder } from '../cipher';
+import { Decoder } from '../consumer/cipher';
 import { DubboProvider as DubboProviderBase } from '../base';
 
 
