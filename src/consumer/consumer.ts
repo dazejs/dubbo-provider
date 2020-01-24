@@ -54,6 +54,7 @@ export class Consumer {
    */
   async get(interfaceName: string, interfaceVersion = '0.0.0', interfaceGroup = '-') {
     const id = getServiceChunkId(interfaceName, interfaceGroup, interfaceVersion);
+    
     if (this.cache.has(id)) return this.cache.get(id);
     const invoker = new Invoker(this, interfaceName, interfaceVersion, interfaceGroup);
     await invoker.register();

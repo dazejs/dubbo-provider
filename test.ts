@@ -13,10 +13,17 @@ import java from 'js-to-java';
 
   const invorker = await c.get('com.alibaba.dubbo.demo.DemoProvider', '1.0.0');
 
-  const res = await invorker?.invoke('sayHello', [
-    java.String('dazejs')
-  ]);
+  // const res = await invorker?.invoke('sayHello', [
+  //   java.String('dazejs')
+  // ]);
 
-  console.log(res);
+  // console.log(res);
 
+  setInterval(async () => {
+    const res = await invorker?.invoke('sayHello', [
+      java.String('dazejs')
+    ]);
+
+    console.log(res);
+  }, 1000);
 })();

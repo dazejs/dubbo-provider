@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@dazejs/framework": "^2.2.1",
+    "@types/compare-versions": "^3.3.0",
     "@types/js-to-java": "^2.4.0",
     "@types/node": "^12.7.5",
     "@types/node-zookeeper-client": "^0.2.6",
@@ -31,6 +32,7 @@
     "typescript": "^3.7.4"
   },
   "dependencies": {
+    "compare-versions": "^3.5.1",
     "hessian.js": "^2.9.0",
     "js-to-java": "^2.6.1",
     "node-zookeeper-client": "^1.1.0",

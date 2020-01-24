@@ -1,9 +1,12 @@
 import * as net from 'net';
 import * as url from 'url';
 import { Invoker } from './invoker';
-import { Encoder } from './cipher/encoder';
-import { Decoder } from './cipher/decoder';
+// import { Decoder } from './cipher/decoder';
 import { Heartbeat } from '../heartbeat';
+import { Codec } from '../codec';
+import { Request, Invocation } from '../request';
+import { Result } from '../response';
+// import { Encoder} from './cipher/encoder'
 
 export class Channel {
   /**
@@ -27,14 +30,9 @@ export class Channel {
   connected = false;
 
   /**
-   * 请求唯一标识
-   */
-  requestId = 1;
-
-  /**
    * 解码器
    */
-  decoder = new Decoder();
+  // decoder = new Decoder();
 
   /**
    * 数据响应回调集合
@@ -234,41 +232,37 @@ export class Channel {
       return;
     }
 
-    let id = ++this.requestId;
-    if (id === Number.MAX_SAFE_INTEGER) id = this.requestId = 1;
+    const req = new Request();
+    const inv = new Invocation(
+      method,
+      args,
+    );
+    inv.setAttachment('path', this.service.searchParams.get('interface') as string);
+    inv.setAttachment('interface', this.service.searchParams.get('interface') as string);
+    inv.setAttachment('version', this.service.searchParams.get('version') as string ?? '0.0.0');
+    req.setData(inv);
+
     this.workload++;
 
     return new Promise(resolve => {
-
       const timer = setTimeout(() => {
         this.workload--;
-        this.callbacks.delete(id);
+        this.callbacks.delete(req.getId());
         resolve({
           code: 408,
           message: 'rpc invoke timeout:' + this.getServiceTimeout(),
         });
       }, this.getServiceTimeout());
 
-      this.callbacks.set(id, (data: any) => {
+      this.callbacks.set(req.getId(), (data: any) => {
         clearTimeout(timer);
         this.workload--;
         this.heartbeatFails = 0;
-        this.callbacks.delete(id);
+        this.callbacks.delete(req.getId());
         resolve(data);
       });
-
-      const payload = new Encoder({
-        requestId: this.requestId,
-        dubboVersion: this.service.searchParams.get('dubbo') as string,
-        dubboInterface: this.service.searchParams.get('interface') as string,
-        version: this.service.searchParams.get('version') as string,
-        methodName: method,
-        methodArgs: args,
-        group: this.service.searchParams.get('default.group') as string,
-        application: this.service.searchParams.get('application') as string,
-        timeout: this.getServiceTimeout()
-      });
-      this.send(payload.encode());
+      const payload = new Codec().encode(req) as Buffer;
+      this.send(payload);
     });
   }
 
@@ -287,19 +281,18 @@ export class Channel {
    */
   onMessage(buffer: Buffer) {
     this.setLastReadTimestamp();
-    const receive = this.decoder.receive(buffer);
-    if (receive) {
-      const { err, res, requestId } = receive;
+    // const receive = this.decoder.receive(buffer);
+    const res = new Codec().decode(buffer);
+    if (res) {
+      const requestId = res.getId();
       if (this.callbacks.has(requestId)) {
         const fn = this.callbacks.get(requestId);
-        if (err) return fn({
-          code: 500,
-          message: err.message,
-        });
-        return fn({
-          code: 200,
-          data: res,
-        });
+        const result = res.getResult();
+        if (result instanceof Result) {
+          fn(result.getValue());
+        } else {
+          fn(result);
+        }
       }
     }
   }

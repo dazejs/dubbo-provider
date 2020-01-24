@@ -92,6 +92,7 @@ export class Invoker {
    */
   async register() {
     const url = new URL('consumer://');
+
     const ipAddress = IP.address() || '';
     url.host = `${ipAddress}/${this.interfaceName}`;
     url.searchParams.append('application', this.consumer.application);
@@ -109,6 +110,7 @@ export class Invoker {
     await this.consumer.registry.create(this.registryRootPath, '', 0);
     await this.consumer.registry.create(this.registryCatePath, '', 0);
     await this.consumer.registry.create(this.getRegistryConsumerPath(consumerUrl), ipAddress, 0);
+
     return this;
   }
 
@@ -151,17 +153,17 @@ export class Invoker {
    * @param args 
    */
   async invoke<T = any>(method: string, args: any[] = []): Promise<T> {
-    const providers: Channel[] = Array.from(this.channels.values());
-    if (providers.length === 0) throw new Error('no providers');
+    const channels: Channel[] = Array.from(this.channels.values());
+    if (channels.length === 0) throw new Error('no providers');
     // 找到负载最低的通道进行调用
-    let _pickPrivoder: Channel = providers[0];
-    for (let i = 1; i < providers.length; i++) {
-      const provider = providers[i];
-      if (_pickPrivoder.getWorkload() > provider.getWorkload()) {
-        _pickPrivoder = provider;
+    let _picedkChannel: Channel = channels[0];
+    for (let i = 1; i < channels.length; i++) {
+      const channel = channels[i];
+      if (_picedkChannel.getWorkload() > channel.getWorkload()) {
+        _picedkChannel = channel;
       }
     }
-    return _pickPrivoder.invoke(method, args) as Promise<T>;
+    return _picedkChannel.invoke(method, args) as Promise<T>;
   }
 
   /**
@@ -190,6 +192,7 @@ export class Invoker {
       }
     }
     await Promise.all(promises);
+    console.log(list.size);
     return list.size;
   }
 

@@ -1,7 +1,7 @@
 import * as net from 'net';
 import { Registry } from '../registry/registry';
 import { Service, ProviderServiceOption } from './service';
-import { Decoder } from '../consumer/cipher';
+// import { Decoder } from '../consumer/DEPRECATED_cipher';
 import { DubboProvider as DubboProviderBase } from '../base';
 
 
@@ -28,7 +28,7 @@ export class Provider {
   lastReadTimestamp = Date.now();
   lastWriteTimestamp = Date.now();
 
-  decoder = new Decoder()
+  // decoder = new Decoder()
   
   constructor(options: ProviderOptions) {
     this.application = options.application ?? 'dazejs';
@@ -76,8 +76,8 @@ export class Provider {
 
   onMessage(buffer: Buffer) {
     this.setLastReadTimestamp();
-    const receive = this.decoder.receive(buffer);
-    console.log(receive);
+    // const receive = this.decoder.receive(buffer);
+    // console.log(receive);
   }
 
   async listen() {
