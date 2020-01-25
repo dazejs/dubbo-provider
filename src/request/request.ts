@@ -11,6 +11,8 @@ export class Request {
 
   private twoWay = true;
 
+  private version?: string;
+
   constructor(id?: number) {
     if (id) this.id = id;
     else this.id = this.newId();
@@ -24,6 +26,13 @@ export class Request {
 
   public getId() {
     return this.id;
+  }
+
+  public getVersion() {
+    return this.version;
+  }
+  public setVersion(version: string) {
+    this.version = version;
   }
 
   public isEvent() {

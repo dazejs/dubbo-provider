@@ -1,7 +1,7 @@
 
 // import { Channel } from '../consumer/channel';
 import Hessian from 'hessian.js';
-import { Request, Invocation } from '../request';
+import { Request, Invocation, DecodeableInvocation } from '../request';
 import { Response, DecodeableResult } from '../response';
 import { Bytes, Constants, Version } from '../common';
 import compareVersions from 'compare-versions';
@@ -29,9 +29,9 @@ export class Codec {
   // magic header.
   private MAGIC = 0xdabb;
   // message flag.
-  private FLAG_REQUEST = 0x80;
-  private FLAG_TWOWAY = 0x40;
-  private FLAG_EVENT = 0x20;
+  public static FLAG_REQUEST = 0x80;
+  public static FLAG_TWOWAY = 0x40;
+  public static FLAG_EVENT = 0x20;
   
   // 由于目前只支持 Hessian2
   // 这边先写死 Hessian2Serialization
@@ -97,9 +97,9 @@ export class Codec {
     const flag = dataBuffer[2];
     const idBuffer = dataBuffer.slice(4, 12);
     const id = Bytes.fromBytes8(idBuffer);
-    if ((flag & this.FLAG_REQUEST) === 0) {
+    if ((flag & Codec.FLAG_REQUEST) === 0) {
       const res = new Response(id);
-      if ((flag & this.FLAG_EVENT) !== 0) {
+      if ((flag & Codec.FLAG_EVENT) !== 0) {
         res.setEvent(true);
       }
       const status = dataBuffer[3];
@@ -112,10 +112,28 @@ export class Codec {
       }
       return res;
     } else {
-      // TODO
-      console.log('decode request');
+      console.log(`request`);
+      const req = new Request(id);
+      req.setVersion(Version.getProtocolVersion());
+      req.setTwoWay((flag & Codec.FLAG_TWOWAY) !== 0);
+      if ((flag & Codec.FLAG_EVENT) !== 0) {
+        req.setEvent(true);
+      }
+      let data: any;
+      const input = new Hessian.DecoderV2(dataBuffer.slice(this.HEADER_LENGTH));
+      if (req.isEvent()) {
+        data = this.decodeEventData(input);
+      } else {
+        const inv = new DecodeableInvocation(req, input);
+        data = inv.decode();
+      }
+      req.setData(data);
     }
     return;
+  }
+
+  decodeEventData(input: any) {
+    return input.read();
   }
 
   /**
@@ -143,12 +161,12 @@ export class Codec {
     header[1] = this.MAGIC;
     header[0] = this.MAGIC >>> 8;
     // set request and serialization flag.
-    header[2] = this.FLAG_REQUEST | this.HESSIAN2_SERIALIZATION_CONTENT_ID | 64;
+    header[2] = Codec.FLAG_REQUEST | this.HESSIAN2_SERIALIZATION_CONTENT_ID | 64;
     if (req.isTwoWay()) {
-      header[2] |= this.FLAG_TWOWAY;
+      header[2] |= Codec.FLAG_TWOWAY;
     }
     if (req.isEvent()) {
-      header[2] |= this.FLAG_EVENT;
+      header[2] |= Codec.FLAG_EVENT;
     }
     // set request id.
     Bytes.long2bytes(req.getId(), header, 4);
@@ -190,7 +208,7 @@ export class Codec {
     out.write(inv.getMethodName());
     out.write(inv.getParameterTypesDesc());
 
-    const args = inv.getArgs();
+    const args = inv.getArgs() ?? [];
 
     for (const arg of args) {
       out.write(arg);
@@ -208,9 +226,9 @@ export class Codec {
     header[1] = this.MAGIC;
     header[0] = this.MAGIC >>> 8;
     // set request and serialization flag.
-    header[2] = this.FLAG_REQUEST | this.HESSIAN2_SERIALIZATION_CONTENT_ID;
+    header[2] = Codec.FLAG_REQUEST | this.HESSIAN2_SERIALIZATION_CONTENT_ID;
     if (res.isHeartbeat()) {
-      header[2] |= this.FLAG_EVENT;
+      header[2] |= Codec.FLAG_EVENT;
     }
     const status = res.getStatus();
     header[3] = status;
@@ -283,7 +301,7 @@ export class Codec {
   }
 
   sieveUnnecessaryAttachments(inv: Invocation) {
-    const attachments = inv.getAttachments();
+    const attachments = inv.getAttachments() ?? {};
     const attachmentsToPass = {};
 
     for (const key of Object.keys(attachments)) {

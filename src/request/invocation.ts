@@ -13,11 +13,11 @@ const PRIMITIVE_TYPE_REF = {
 };
 
 export class Invocation {
-  private methodName: string;
+  private methodName?: string;
   
-  private args: any[];
+  private args?: any[];
 
-  private attachments: Record<string, any>;
+  private attachments?: Record<string, any> = {};
 
   private attributes: Record<string, any> = {};
 
@@ -26,8 +26,8 @@ export class Invocation {
   private invoker?: Invoker
 
   constructor(
-    methodName: string,
-    args: any[],
+    methodName?: string,
+    args?: any[],
     attachments?: Record<string, any>,
     invoker?: Invoker,
   ) {
@@ -40,6 +40,10 @@ export class Invocation {
 
   public getMethodName() {
     return this.methodName;
+  }
+
+  public setMethodName(methodName: string) {
+    this,methodName = methodName;
   }
 
   public getInvoker() {
@@ -105,10 +109,12 @@ export class Invocation {
   }
 
   public getAttachment(key: string, defaultValue?: string) {
+    if (!this.attachments) return defaultValue;
     return this.attachments[key] ?? defaultValue;
   }
 
   public setAttachment(key: string, value: string) {
+    if (!this.attachments) this.attachments = {};
     this.attachments[key] = value;
   }
 }

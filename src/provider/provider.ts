@@ -14,7 +14,6 @@ export interface ProviderOptions {
   registry: Registry;
 }
 
-
 export class Provider {
   server: net.Server;
   application: string;
