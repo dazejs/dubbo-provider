@@ -14,6 +14,7 @@ export class DecodeableResult extends Result {
 
   decode() {
     const flag = this.inputStream.readInt();
+    console.log(flag, ';flag');
     switch(flag) {
       case Codec.RESPONSE_NULL_VALUE:
         break;
@@ -43,6 +44,7 @@ export class DecodeableResult extends Result {
 
   handleValue(inputStream: any) {
     const value = inputStream.read();
+    console.log(value, 'value');
     this.setValue(value);
   }
 

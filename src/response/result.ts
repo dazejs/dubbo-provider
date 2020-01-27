@@ -1,22 +1,22 @@
 
 
 export class Result {
-  private result: any;
+  private value: any;
 
   private attachments: Record<string, any> = {};
 
   private exception?: Error;
 
-  constructor(result?: any) {
-    this.result = result;
+  constructor(value?: any) {
+    this.value = value;
   }
 
-  public setValue(result?: any) {
-    this.result = result;
+  public setValue(value?: any) {
+    this.value = value;
   }
 
   public getValue() {
-    return this.result;
+    return this.value;
   }
 
   public getAttachments() {

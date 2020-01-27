@@ -3,6 +3,12 @@ import { Registry } from '../registry/registry';
 import { Service, ProviderServiceOption } from './service';
 // import { Decoder } from '../consumer/DEPRECATED_cipher';
 import { DubboProvider as DubboProviderBase } from '../base';
+import { Codec } from '../codec';
+// import { getServiceChunkId } from '../utils';
+// import { Request } from '../request';
+import { Response, Result} from '../response';
+import { Request, Invocation } from '../request';
+// import java from 'js-to-java';
 
 
 export interface ProviderOptions {
@@ -73,18 +79,54 @@ export class Provider {
   }
 
 
-  onMessage(buffer: Buffer) {
+  onMessage(buffer: Buffer, socket: net.Socket) {
+    console.warn('监听到提供者接收数据');
     this.setLastReadTimestamp();
+    const req = new Codec().decode(buffer);
+    console.log(req, 'req');
+    if (req) {
+      if (req instanceof Request) {
+        const inv = req.getData() as Invocation;
+        // const serviceId = getServiceChunkId(inv.getAttachment('path'), inv.getAttachment('group') ?? '-', inv.getAttachment('version'));
+        // const service = this.cache.get(serviceId);
+        const res = new Response(req.getId());
+        res.setStatus(Response.OK);
+        res.setVersion(req.getVersion() as string);
+        const result = new Result('xxx123');
+        console.log(inv.getAttachment('interface'), 'interface');
+        result.setAttachment('path', inv.getAttachment('path'));
+        // result.setAttachment('interface', inv.getAttachment('interface'));
+        result.setAttachment('version', inv.getAttachment('version'));
+        
+        res.setResult(result);
+        console.log(res, 'response');
+        const data = new Codec().encode(res) as Buffer;
+        console.log(data);
+        this.send(data, socket);
+        // console.log(serviceId, this.cache);
+      }
+    }
     // const receive = this.decoder.receive(buffer);
     // console.log(receive);
   }
 
+  send(data: Buffer, socket: net.Socket) {
+    console.warn('提供者发送');
+    socket.write(data);
+  }
+
   async listen() {
     if (!this.registry.connected) await this.registry.connect();
-    this.server = net.createServer();
-    this.server.on('data', this.onMessage);
+    this.server = net.createServer((socket) => {
+      socket.on('data', (data) => {
+        this.onMessage(data, socket);
+        socket.end();
+      });
+    });
+    // this.server.on('data', this.onMessage);
     await new Promise((resolve, reject) => {
       this.server.listen(this.port, (err?: Error) => {
+        console.log(this.port, 'port');
         if (err) return reject(err);
         return resolve();
       });

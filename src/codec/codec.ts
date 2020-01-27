@@ -2,7 +2,7 @@
 // import { Channel } from '../consumer/channel';
 import Hessian from 'hessian.js';
 import { Request, Invocation, DecodeableInvocation } from '../request';
-import { Response, DecodeableResult } from '../response';
+import { Response, DecodeableResult, Result } from '../response';
 import { Bytes, Constants, Version } from '../common';
 import compareVersions from 'compare-versions';
 
@@ -98,6 +98,7 @@ export class Codec {
     const idBuffer = dataBuffer.slice(4, 12);
     const id = Bytes.fromBytes8(idBuffer);
     if ((flag & Codec.FLAG_REQUEST) === 0) {
+      console.log(`response`);
       const res = new Response(id);
       if ((flag & Codec.FLAG_EVENT) !== 0) {
         res.setEvent(true);
@@ -128,8 +129,8 @@ export class Codec {
         data = inv.decode();
       }
       req.setData(data);
+      return req;
     }
-    return;
   }
 
   decodeEventData(input: any) {
@@ -161,7 +162,7 @@ export class Codec {
     header[1] = this.MAGIC;
     header[0] = this.MAGIC >>> 8;
     // set request and serialization flag.
-    header[2] = Codec.FLAG_REQUEST | this.HESSIAN2_SERIALIZATION_CONTENT_ID | 64;
+    header[2] = Codec.FLAG_REQUEST | this.HESSIAN2_SERIALIZATION_CONTENT_ID;
     if (req.isTwoWay()) {
       header[2] |= Codec.FLAG_TWOWAY;
     }
@@ -226,7 +227,7 @@ export class Codec {
     header[1] = this.MAGIC;
     header[0] = this.MAGIC >>> 8;
     // set request and serialization flag.
-    header[2] = Codec.FLAG_REQUEST | this.HESSIAN2_SERIALIZATION_CONTENT_ID;
+    header[2] = this.HESSIAN2_SERIALIZATION_CONTENT_ID;
     if (res.isHeartbeat()) {
       header[2] |= Codec.FLAG_EVENT;
     }
@@ -272,19 +273,24 @@ export class Codec {
   }
 
   encodeResponseData(out: any, result?: ResponseResult, version?: string) {
+    console.warn('编码响应数据');
+    
     const attach = this.isSupportResponseAttachment(version);
-
+    
     if (result === null || result === undefined) {
       out.write(
         attach ? Codec.RESPONSE_NULL_VALUE_WITH_ATTACHMENTS : Codec.RESPONSE_NULL_VALUE
       );
     } else {
+      console.log('ecode body', attach);
       out.write(
         attach ? Codec.RESPONSE_VALUE_WITH_ATTACHMENTS : Codec.RESPONSE_VALUE
       );
+      out.write(result instanceof Result ? result.getValue() : result);
     }
 
     if (attach) {
+      // console.log(result?.attachments ?? {}, 'xxxxxx');
       out.write({
         ...(result?.attachments ?? {}),
         dubbo: this.DUBBO_VERSION

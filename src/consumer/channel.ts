@@ -1,12 +1,10 @@
 import * as net from 'net';
 import * as url from 'url';
 import { Invoker } from './invoker';
-// import { Decoder } from './cipher/decoder';
 import { Heartbeat } from '../heartbeat';
 import { Codec } from '../codec';
 import { Request, Invocation } from '../request';
-import { Result } from '../response';
-// import { Encoder} from './cipher/encoder'
+import { Result, Response } from '../response';
 
 export class Channel {
   /**
@@ -272,6 +270,7 @@ export class Channel {
    */
   send(buf: Buffer) {
     if (!this.connected) return;
+    console.warn('消费者发送数据');
     this.client.write(buf);
   }
 
@@ -280,9 +279,11 @@ export class Channel {
    * @param buffer 
    */
   onMessage(buffer: Buffer) {
+    console.warn('监听到消费者接收数据');
     this.setLastReadTimestamp();
     // const receive = this.decoder.receive(buffer);
-    const res = new Codec().decode(buffer);
+    const res = new Codec().decode(buffer) as Response;
+    console.log(res);
     if (res) {
       const requestId = res.getId();
       if (this.callbacks.has(requestId)) {

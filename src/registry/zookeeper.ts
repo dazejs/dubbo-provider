@@ -73,7 +73,7 @@ export class ZookeeperRegistry extends Registry {
    * 判断节点是否已存在
    * @param nodePath 
    */
-  exists(nodePath: string): Promise<boolean> {
+  async exists(nodePath: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.client.exists(nodePath, (err, stat) => {
         if (err) return reject(err);

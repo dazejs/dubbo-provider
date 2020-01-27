@@ -110,7 +110,6 @@ export class Invoker {
     await this.consumer.registry.create(this.registryRootPath, '', 0);
     await this.consumer.registry.create(this.registryCatePath, '', 0);
     await this.consumer.registry.create(this.getRegistryConsumerPath(consumerUrl), ipAddress, 0);
-
     return this;
   }
 

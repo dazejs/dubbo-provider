@@ -69,7 +69,6 @@ export class Service {
     return this;
   }
 
-
   async register(): Promise<this> {
     const url = new URL('dubbo://');
     const ipAddress = IP.address() || '';
