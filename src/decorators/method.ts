@@ -1,4 +1,5 @@
 import { DubboMethodMetadataStruct } from '../dubbo';
+// import { DubboMetadataStruct } from '../dubbo';
 /**
  * Comment
  *
@@ -6,11 +7,11 @@ import { DubboMethodMetadataStruct } from '../dubbo';
  */
 export function Method(): MethodDecorator {
   return function(target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor): PropertyDescriptor {
-    const methods: Map<string, DubboMethodMetadataStruct> = Reflect.getMetadata('dubbo.method', target.constructor) ?? new Map();
+    const methods: Map<string, DubboMethodMetadataStruct> = Reflect.getMetadata('dubbo.methods', target.constructor) ?? new Map();
     methods.set(propertyKey.toString(), {
       method: propertyKey.toString()
     });
-    Reflect.defineMetadata('dubbo.method', methods, target.constructor);
+    Reflect.defineMetadata('dubbo.methods', methods, target.constructor);
     return descriptor;
   };
 }

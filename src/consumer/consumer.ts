@@ -1,5 +1,5 @@
 import { Registry } from '../registry/registry';
-import { getServiceChunkId } from '../utils';
+import { getServiceId } from '../utils';
 import { Invoker } from './invoker';
 
 export interface ConsumerOptions {
@@ -53,7 +53,7 @@ export class Consumer {
    * @param interfaceGroup 
    */
   async get(interfaceName: string, interfaceVersion = '0.0.0', interfaceGroup = '-') {
-    const id = getServiceChunkId(interfaceName, interfaceGroup, interfaceVersion);
+    const id = getServiceId(interfaceName, interfaceGroup, interfaceVersion);
     if (this.cache.has(id)) return this.cache.get(id);
     const invoker = new Invoker(this, interfaceName, interfaceVersion, interfaceGroup);
     await invoker.register();

@@ -32,14 +32,7 @@ export class Dubbo {
     this.app = app;
   }
 
-  async registerProvider(DubboProvider: typeof DubboProviderBase) {
-    const dubboMetadata: DubboMetadataStruct = Reflect.getMetadata('dubbo', DubboProvider) ?? {};
-    // const methodMetadata: Map<string, DubboMethodMetadataStruct> = Reflect.getMetadata('dubbo.method', DubboProvider) ?? new Map();
-
-    const registryName = dubboMetadata.registry ?? 'default';
-
-    const { type = 'zookeeper', port = 20880, ...options } = this.app.get('config').get(`dubbo.${dubboMetadata.registry}`, {});
-
+  private async setupRegistry(registryName: string, type: RegistryType, options: any) {
     if (!this.registries.has(registryName)) {
       const registry = this.getRegistry(type, options);
       if (registry) {
@@ -47,28 +40,46 @@ export class Dubbo {
         this.registries.set(registryName, registry);
       }
     }
+  }
 
-    if (!this.providers.has(registryName)) {
-      const registry = this.registries.get(registryName);
-      if (registry) {
-        const provider = new Provider({
-          registry,
-          port,
-          pid: process.pid
-        });
-        this.providers.set(registryName, provider);
+  async registerProvider(DubboProvider: typeof DubboProviderBase) {
+    // dubbo metadata
+    const dubboMetadata: DubboMetadataStruct = Reflect.getMetadata('dubbo', DubboProvider) ?? {};
+    const methods: Map<string, DubboMethodMetadataStruct> = Reflect.getMetadata('dubbo.methods', DubboProvider) ?? {};
+    const registryName = dubboMetadata.registry ?? 'default';
+    const { type = 'zookeeper', port = 20880, ...options } = this.app.get('config').get(`dubbo.${dubboMetadata.registry}`, {});
 
-        const _provider = this.providers.get(registryName) as Provider;
-        const dubboProvider = this.app.get<DubboProviderBase>(DubboProvider);
-        _provider.registerService(
-          dubboProvider,
-          {
-            interface: dubboMetadata.interfaceName as string,
-            methods: Reflect.ownKeys(DubboProvider.prototype).filter(item => item !== 'constructor' && typeof DubboProvider.prototype[item] === 'function') as string[],
-          }
-        );
+    await this.setupRegistry(registryName, type, options);
+
+    const interfaceName = dubboMetadata.interfaceName;
+    if (!interfaceName) throw new Error('The dubbo provider must have inerfaceName!');
+    if (this.providers.has(interfaceName)) return;
+    
+    const registry = this.registries.get(registryName);
+    if (!registry) throw new Error(`No registry was found with registry name: [${registryName}]!`);
+
+    const provider = new Provider({
+      registry,
+      port,
+      pid: process.pid
+    });
+    
+    const dubboProvider = this.app.get<DubboProviderBase>(DubboProvider);
+    const methodNames: string[] = [];
+    for (const method of methods.values()) {
+      if (method.method) {
+        methodNames.push(method.method);
       }
     }
+    provider.registerService(
+      dubboProvider,
+      {
+        interface: interfaceName,
+        methods: methodNames
+      }
+    );
+
+    this.providers.set(interfaceName, provider);
   }
 
   async registerConsumer(DubboConsomer: typeof DubboConsumerBase) {

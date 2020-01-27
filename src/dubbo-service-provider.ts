@@ -18,9 +18,7 @@ export class DubboServiceProvider {
   }
   
   async launch() {
-   
     await this.registerProviders();
-    
   }
 
   async registerProviders() {
@@ -35,6 +33,7 @@ export class DubboServiceProvider {
       }
       await this.app.get<Dubbo>('dubbo').registerProvider(Provider);
     }
+    console.log(111);
     await this.app.get<Dubbo>('dubbo').run();
   }
 

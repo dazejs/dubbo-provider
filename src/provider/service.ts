@@ -1,7 +1,7 @@
 import { Provider } from './provider';
 import { URL, format as urlFormat } from 'url';
 import { IP } from '../common';
-import { getServiceChunkId } from '../utils';
+import { getServiceId } from '../utils';
 import { DubboProvider as DubboProviderBase } from '../base';
 
 export interface ProviderServiceOption {
@@ -17,37 +17,61 @@ export interface ProviderServiceOption {
 }
 
 export class Service {
+  /**
+   * provider instance
+   */
   provider: Provider;
 
-  
-
   /**
-   * 接口名称
+   * interface name
    */
   interfaceName: string;
 
   /**
-   * 接口版本
+   * interface version
    */
   interfaceVersion: string;
 
   /**
-   * 接口组别
+   * interface group
    */
   interfaceGroup: string;
 
+  /**
+   * interface revision
+   */
   interfaceRevision: string;
 
+  /**
+   * interface methods array
+   */
   interfaceMethods: string[] = [];
 
+  /**
+   * interface delay
+   */
   interfaceDelay: number;
 
+  /**
+   * interface retries
+   */
   interfaceRetries: number;
 
+  /**
+   * interface timeout
+   */
   interfaceTimout: number;
 
+  /**
+   * method handler
+   */
   handler?: DubboProviderBase;
-
+  
+  /**
+   * Create Service instance
+   * @param provider 
+   * @param options 
+   */
   constructor(provider: Provider, options: ProviderServiceOption) {
     this.provider = provider;
     this.interfaceName = options.interface;
@@ -60,8 +84,11 @@ export class Service {
     this.interfaceTimout = options.timeout ?? 3000;
   }
 
-  getServiceId() {
-    return getServiceChunkId(this.interfaceName, this.interfaceGroup, this.interfaceVersion);
+  /**
+   * get service id
+   */
+  getId() {
+    return getServiceId(this.interfaceName, this.interfaceGroup, this.interfaceVersion);
   }
 
   setHandler(handler: DubboProviderBase) {
