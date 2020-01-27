@@ -25,6 +25,7 @@ yarn-error.log
 
 # test
 /coverage
+/__test__/java/dubbo-demo/*/target
 
 # future and deprecated
 FUTURE_*
