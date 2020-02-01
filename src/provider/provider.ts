@@ -4,7 +4,7 @@ import { Service, ProviderServiceOption } from './service';
 // import { Decoder } from '../consumer/DEPRECATED_cipher';
 import { DubboProvider as DubboProviderBase } from '../base';
 import { Codec } from '../codec';
-// import { getServiceChunkId } from '../utils';
+import { getServiceId } from '../utils';
 // import { Request } from '../request';
 import { Response, Result} from '../response';
 import { Request, Invocation } from '../request';
@@ -21,20 +21,60 @@ export interface ProviderOptions {
 }
 
 export class Provider {
+  /**
+   * TCP Server
+   */
   server: net.Server;
-  application: string;
-  root: string;
-  version: string;
-  port: number;
-  pid: number;
-  registry: Registry;
-  cache: Map<string, Service> = new Map();
 
+  /**
+   * dubbo application
+   */
+  application: string;
+
+  /**
+   * dubbo root path
+   */
+  root: string;
+
+  /**
+   * dubbo version
+   */
+  version: string;
+
+  /**
+   * dubbo provider port
+   */
+  port: number;
+
+  /**
+   * dubbo provider pid
+   */
+  pid: number;
+
+  /**
+   * dubbo provider registry instance
+   */
+  registry: Registry;
+
+  /**
+   * dubbo services cache
+   */
+  services: Map<string, Service> = new Map();
+
+  /**
+   * last read timestamp
+   */
   lastReadTimestamp = Date.now();
+
+  /**
+   * last write timestamp
+   */
   lastWriteTimestamp = Date.now();
 
-  // decoder = new Decoder()
-  
+  /**
+   * Create provider instance
+   * @param options 
+   */
   constructor(options: ProviderOptions) {
     this.application = options.application ?? 'dazejs';
     this.root = options.root ?? 'dubbo';
@@ -44,31 +84,51 @@ export class Provider {
     this.registry = options.registry;
   }
 
+  /**
+   * get last read timestamp
+   */
   getLastReadTimestamp() {
     return this.lastReadTimestamp;
   }
 
+  /**
+   * set last read timestamp to now
+   */
   setLastReadTimestamp() {
     this.lastReadTimestamp = Date.now();
   }
 
+  /**
+   * get last write timestamp
+   */
   getLastWriteTimestamp() {
     return this.lastWriteTimestamp;
   }
 
+  /**
+   * set last write timestamp to now
+   */
   setLastWriteTimestamp() {
     this.lastWriteTimestamp = Date.now();
   }
 
+  /**
+   * register service
+   * @param handler 
+   * @param options 
+   */
   registerService(handler: DubboProviderBase, options: ProviderServiceOption) {
     const service = new Service(this, options);
     service.setHandler(handler);
-    this.cache.set(service.getId(), service);
+    this.services.set(service.getId(), service);
     return this;
   }
 
+  /**
+   * publish all services
+   */
   publish() {
-    const services = this.cache.values();
+    const services = this.services.values();
     const promises: Promise<Service>[] = [];
     for (const service of services) {
       promises.push(
@@ -78,27 +138,44 @@ export class Provider {
     return Promise.all(promises);
   }
 
-
-  onMessage(buffer: Buffer, socket: net.Socket) {
+  /**
+   * handle message
+   * @param buffer 
+   * @param socket 
+   */
+  async onMessage(buffer: Buffer, socket: net.Socket) {
     this.setLastReadTimestamp();
     const req = new Codec().decode(buffer);
     if (req instanceof Request) {
-      const inv = req.getData() as Invocation;
+      const inv = req.getData();
+      if (!(inv instanceof Invocation)) return;
+      
       // const serviceId = getServiceChunkId(inv.getAttachment('path'), inv.getAttachment('group') ?? '-', inv.getAttachment('version'));
       // const service = this.cache.get(serviceId);
+      const methodName = inv.getMethodName();
+      console.log(methodName, 'sadasd');
+      if (!methodName) return;
+      const serviceId = getServiceId(inv.getAttachment('path'), inv.getAttachment('group') ?? '-', inv.getAttachment('version') ?? '0.0.0');
+      const service = this.services.get(serviceId);
+      if (!service) return;
+
       const res = new Response(req.getId());
       res.setStatus(Response.OK);
       res.setVersion(req.getVersion() as string);
-      const result = new Result('xxx123');
-      console.log(inv.getAttachment('interface'), 'interface');
+      const result = new Result(
+        await service.performHandler(methodName, [
+          ...(inv.getArgs() ?? [])
+        ])
+      );
+      // console.log(inv.getAttachment('interface'), 'interface');
       result.setAttachment('path', inv.getAttachment('path'));
       // result.setAttachment('interface', inv.getAttachment('interface'));
       result.setAttachment('version', inv.getAttachment('version'));
       
       res.setResult(result);
-      console.log(res, 'response');
+      // console.log(res, 'response');
       const data = new Codec().encode(res) as Buffer;
-      console.log(data);
+      // console.log(data);
       this.send(data, socket);
         // console.log(serviceId, this.cache);
     }
@@ -106,16 +183,24 @@ export class Provider {
     // console.log(receive);
   }
 
+  /**
+   * send message
+   * @param data 
+   * @param socket 
+   */
   send(data: Buffer, socket: net.Socket) {
-    console.warn('提供者发送');
+    // console.warn('提供者发送');
     socket.write(data);
   }
 
+  /**
+   * listen tcp server
+   */
   async listen() {
     if (!this.registry.connected) await this.registry.connect();
     this.server = net.createServer((socket) => {
-      socket.on('data', (data) => {
-        this.onMessage(data, socket);
+      socket.on('data', async (data) => {
+        await this.onMessage(data, socket);
         socket.end();
       });
     });

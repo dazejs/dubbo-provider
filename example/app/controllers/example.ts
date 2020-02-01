@@ -1,6 +1,6 @@
 import { Controller, route, http } from '@dazejs/framework';
 import { Consumer, ZookeeperRegistry } from '../../../src';
-
+// import java from 'js-to-java';
 
 
 @route()
@@ -18,7 +18,7 @@ export default class extends Controller {
     });
 
     const invorker = await consumer.get('com.daze.dubbo.service.Demo');
-    const res = await invorker?.invoke('sayHello');
+    const res = await invorker?.invoke('sayHello', ['xxxxxx']);
     console.log(res, 'res - con');
     return { name: 'dazejs' };
   }

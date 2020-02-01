@@ -22,7 +22,8 @@ export class DecodeableInvocation extends Invocation {
     this.setAttachment('path', path);
     this.setAttachment('version', this.inputStream.read());
 
-    this.setMethodName(this.inputStream.read());
+    const metthodName = this.inputStream.read();
+    this.setMethodName(metthodName);
 
     const desc = this.inputStream.read();
     this.setParameterTypesDesc(desc);

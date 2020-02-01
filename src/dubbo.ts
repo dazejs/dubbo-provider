@@ -1,7 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
 import { Application } from '@dazejs/framework';
-import { DubboProvider as DubboProviderBase, DubboConsumer as DubboConsumerBase } from './base';
+import { DubboProvider as DubboProviderBase, DubboConsumer as DubboConsumerBase, DubboConsumer } from './base';
 import { ZookeeperRegistry } from './registry';
 import { Registry } from './registry/registry';
 // import * as assert from 'assert';
@@ -13,6 +11,9 @@ export type RegistryType = 'zookeeper'
 export interface DubboMetadataStruct {
   interfaceName?: string;
   registry?: string;
+  application?: string;
+  version?: string;
+  root?: string;
 }
 
 export interface DubboMethodMetadataStruct {
@@ -83,9 +84,31 @@ export class Dubbo {
   }
 
   async registerConsumer(DubboConsomer: typeof DubboConsumerBase) {
-    console.log(DubboConsomer);
-    // const dubboMetadata: DubboMetadataStruct = Reflect.getMetadata('dubbo', DubboConsomer) ?? {};
-    // const methodMetadata: Map<string, DubboMethodMetadataStruct> = Reflect.getMetadata('dubbo.method', DubboConsomer) ?? new Map();
+    // dubbo metadata
+    const dubboMetadata: DubboMetadataStruct = Reflect.getMetadata('dubbo', DubboConsomer) ?? {};
+    const registryName = dubboMetadata.registry ?? 'default';
+    const { type = 'zookeeper', ...options } = this.app.get('config').get(`dubbo.${dubboMetadata.registry}`, {});
+    delete options.port;
+    await this.setupRegistry(registryName, type, options);
+
+    const interfaceName = dubboMetadata.interfaceName;
+    if (!interfaceName) throw new Error('The dubbo provider must have inerface name!');
+
+    const registry = this.registries.get(registryName);
+    if (!registry) throw new Error(`No registry was found with registry name: [${registryName}]!`);
+
+    this.app.make(DubboConsumer, [{
+      registry,
+      application: dubboMetadata.application,
+      root: dubboMetadata.root,
+      version: dubboMetadata.version
+    }]);
+    // const consumer = new DubboConsumer({
+    //   registry,
+    //   application: dubboMetadata.application,
+    //   root: dubboMetadata.root,
+    //   version: dubboMetadata.version
+    // });
   }
 
   getRegistry(type: RegistryType, options: any): Registry | undefined {

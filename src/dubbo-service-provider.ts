@@ -1,6 +1,7 @@
 import { inject, Loader, Application, provide } from '@dazejs/framework';
 import { DubboProviderType, DubboConsumerType } from './symbols';
 import { Dubbo } from './dubbo';
+// import { Consumer } from './consumer';
 
 
 export class DubboServiceProvider {
@@ -19,6 +20,9 @@ export class DubboServiceProvider {
   
   async launch() {
     await this.registerProviders();
+    await this.registerConsumers();
+
+    await this.app.get<Dubbo>('dubbo').run();
   }
 
   async registerProviders() {
@@ -31,10 +35,7 @@ export class DubboServiceProvider {
           return this.app.get(Provider, args);
         }, true);
       }
-      await this.app.get<Dubbo>('dubbo').registerProvider(Provider);
     }
-    console.log(111);
-    await this.app.get<Dubbo>('dubbo').run();
   }
 
   async registerConsumers() {
@@ -47,7 +48,6 @@ export class DubboServiceProvider {
           return this.app.get(Consumer, args);
         }, true);
       }
-      // await this.app.get<Dubbo>('dubbo').registerConsumer(Consumer);
     }
   }
 }

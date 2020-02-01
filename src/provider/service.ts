@@ -91,11 +91,22 @@ export class Service {
     return getServiceId(this.interfaceName, this.interfaceGroup, this.interfaceVersion);
   }
 
+  /**
+   * set service handler
+   * @param handler 
+   */
   setHandler(handler: DubboProviderBase) {
     this.handler = handler;
     return this;
   }
 
+  async performHandler(methodName: string, args: any[]) {
+    return this.handler?.[methodName](...args);
+  }
+
+  /**
+   * register service
+   */
   async register(): Promise<this> {
     const url = new URL('dubbo://');
     const ipAddress = IP.address() || '';

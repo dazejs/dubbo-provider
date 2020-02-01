@@ -5,7 +5,8 @@ import { Heartbeat } from '../heartbeat';
 import { Codec } from '../codec';
 import { Request, Invocation } from '../request';
 import { Result, Response } from '../response';
-
+import java from 'js-to-java';
+ 
 export class Channel {
   /**
    * 依赖的调用者
@@ -218,12 +219,30 @@ export class Channel {
     }
   }
 
+  autoArgs(args: any[]) {
+    const res: object[] = [];
+    for (const arg of args) {
+      if (typeof arg === 'string') {
+        res.push(java.String(arg));
+      } else if (typeof arg === 'number') {
+        if (~String(arg).indexOf('.')) {
+          res.push(java.Float(arg));
+        } else {
+          res.push(java.Long(arg));
+        }
+      } else {
+        res.push(arg);
+      }
+    }
+    return res;
+  }
+
   /**
    * 调用方法
    * @param method 
    * @param args 
    */
-  invoke(method: string, args: any[]) {
+  invoke(method: string, args: any[] = []) {
     // 未注册 methgod 时
     const methods = this.service.searchParams.get('methods') || '';
     if (!methods.split(',').includes(method)) {
@@ -233,7 +252,7 @@ export class Channel {
     const req = new Request();
     const inv = new Invocation(
       method,
-      args,
+      this.autoArgs(args),
     );
     inv.setAttachment('path', this.service.searchParams.get('interface') as string);
     inv.setAttachment('interface', this.service.searchParams.get('interface') as string);

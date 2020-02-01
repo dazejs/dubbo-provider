@@ -43,7 +43,7 @@ export class Invocation {
   }
 
   public setMethodName(methodName: string) {
-    this,methodName = methodName;
+    this.methodName = methodName;
   }
 
   public getInvoker() {
@@ -79,7 +79,7 @@ export class Invocation {
         desc.push(';');
       }
     }
-    console.log(desc.join(''));
+    // console.log(desc.join(''));
     this.parameterTypesDesc = desc.join('');
     return;
   }

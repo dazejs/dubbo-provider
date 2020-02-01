@@ -4,7 +4,12 @@ import { DubboProvider, dubbo } from '../../../../src';
 @dubbo.interfaceName('com.daze.dubbo.service.Demo')
 export default class extends DubboProvider {
   @dubbo.method()
-  sayHello(name: string) {
+  async sayHello(name: string) {
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 500);
+    });
     return `Hello ${name}`;
   }
 }
