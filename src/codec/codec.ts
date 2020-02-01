@@ -1,11 +1,9 @@
 
-// import { Channel } from '../consumer/channel';
-import Hessian from 'hessian.js';
-import { Request, Invocation, DecodeableInvocation } from '../request';
-import { Response, DecodeableResult, Result } from '../response';
-import { Bytes, Constants, Version } from '../common';
 import compareVersions from 'compare-versions';
-
+import Hessian from 'hessian.js';
+import { Bytes, Constants, Version } from '../common';
+import { DecodeableInvocation, Invocation, Request } from '../request';
+import { DecodeableResult, Response, Result } from '../response';
 
 export interface ResponseResult {
   path?: string;
@@ -55,7 +53,7 @@ export class Codec {
   private MAGIC_LOW = 0xbb;
 
   /**
-   * 
+   * decode data
    * @param data 
    */
   decode(buffer: Buffer) {
@@ -93,12 +91,15 @@ export class Codec {
     return;
   }
 
+  /**
+   * decode data body
+   * @param dataBuffer 
+   */
   decodeBody(dataBuffer: Buffer) {
     const flag = dataBuffer[2];
     const idBuffer = dataBuffer.slice(4, 12);
     const id = Bytes.fromBytes8(idBuffer);
     if ((flag & Codec.FLAG_REQUEST) === 0) {
-      console.log(`response`);
       const res = new Response(id);
       if ((flag & Codec.FLAG_EVENT) !== 0) {
         res.setEvent(true);
@@ -113,7 +114,6 @@ export class Codec {
       }
       return res;
     } else {
-      console.log(`request`);
       const req = new Request(id);
       req.setVersion(Version.getProtocolVersion());
       req.setTwoWay((flag & Codec.FLAG_TWOWAY) !== 0);
@@ -133,12 +133,16 @@ export class Codec {
     }
   }
 
+  /**
+   * decode event data
+   * @param input 
+   */
   decodeEventData(input: any) {
     return input.read();
   }
 
   /**
-   * encode
+   * encode data
    * @param data 
    */
   encode(data: any) {
@@ -201,7 +205,6 @@ export class Codec {
    * @param version 
    */
   encodeRequestData(out: any, inv: Invocation, version: string) {
-
     out.write(version);
     out.write(String(inv.getAttachment('path')));
     out.write(String(inv.getAttachment('version')));
@@ -214,7 +217,6 @@ export class Codec {
     for (const arg of args) {
       out.write(arg);
     }
-    // console.log(this.sieveUnnecessaryAttachments(inv));
     out.write(
       this.sieveUnnecessaryAttachments(inv)
     );
@@ -233,9 +235,8 @@ export class Codec {
     }
     const status = res.getStatus();
     header[3] = status;
-    // set request id.
 
-    // this.setRequestId(res.getId(), header);
+    // set request id.
     Bytes.long2bytes(res.getId(), header, 4);
 
     const out = new Hessian.EncoderV2();
@@ -256,11 +257,13 @@ export class Codec {
 
     Bytes.int2bytes(body.length, header, 12);
 
-    // header.writeUInt32BE(body.length, 12);
-
     return Buffer.concat([header, body]);
   }
 
+  /**
+   * is Support Response Attachment
+   * @param version 
+   */
   isSupportResponseAttachment(version?: string) {
     if (!version) return false;
     // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to
@@ -272,9 +275,13 @@ export class Codec {
     return compareVersions(version, '2.0.2') >= 0;
   }
 
+  /**
+   * encode response data
+   * @param out 
+   * @param result 
+   * @param version 
+   */
   encodeResponseData(out: any, result?: ResponseResult, version?: string) {
-    console.warn('编码响应数据');
-    
     const attach = this.isSupportResponseAttachment(version);
     
     if (result === null || result === undefined) {
@@ -282,7 +289,6 @@ export class Codec {
         attach ? Codec.RESPONSE_NULL_VALUE_WITH_ATTACHMENTS : Codec.RESPONSE_NULL_VALUE
       );
     } else {
-      console.log('ecode body', attach);
       out.write(
         attach ? Codec.RESPONSE_VALUE_WITH_ATTACHMENTS : Codec.RESPONSE_VALUE
       );
@@ -290,7 +296,6 @@ export class Codec {
     }
 
     if (attach) {
-      // console.log(result?.attachments ?? {}, 'xxxxxx');
       out.write({
         ...(result?.attachments ?? {}),
         dubbo: this.DUBBO_VERSION
@@ -298,6 +303,10 @@ export class Codec {
     }
   }
 
+  /**
+   * check payload
+   * @param size 
+   */
   checkPayload(size: number) {
     const payload = Constants.DEFAULT_PAYLOAD;
     if (payload > 0 && size > payload) {
@@ -306,6 +315,10 @@ export class Codec {
     }
   }
 
+  /**
+   * sieve unnecessary attachments
+   * @param inv 
+   */
   sieveUnnecessaryAttachments(inv: Invocation) {
     const attachments = inv.getAttachments() ?? {};
     const attachmentsToPass = {};
@@ -321,35 +334,4 @@ export class Codec {
       $: attachmentsToPass,
     };
   }
-
-  // getAttachments(data: any) {
-  //   const {
-  //     path,
-  //     dubboInterface,
-  //     group,
-  //     timeout,
-  //     version,
-  //     application,
-  //     attachments,
-  //   } = data;
-
-  //   //merge dubbo attachments and customize attachments
-  //   const map: Record<string, any> = {
-  //     path: path || dubboInterface,
-  //     interface: dubboInterface,
-  //     version: version || '0.0.0',
-  //     ...attachments,
-  //   };
-
-  //   group && (map['group'] = group);
-  //   timeout && (map['timeout'] = timeout);
-  //   application && (map['application'] = application);
-
-  //   const attachmentsHashMap = {
-  //     $class: 'java.util.HashMap',
-  //     $: map,
-  //   };
-
-  //   return attachmentsHashMap;
-  // }
 }

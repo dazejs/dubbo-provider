@@ -1,15 +1,11 @@
 import * as net from 'net';
-import { Registry } from '../registry/registry';
-import { Service, ProviderServiceOption } from './service';
-// import { Decoder } from '../consumer/DEPRECATED_cipher';
 import { DubboProvider as DubboProviderBase } from '../base';
 import { Codec } from '../codec';
+import { Registry } from '../registry/registry';
+import { Invocation, Request } from '../request';
+import { Response, Result } from '../response';
 import { getServiceId } from '../utils';
-// import { Request } from '../request';
-import { Response, Result} from '../response';
-import { Request, Invocation } from '../request';
-// import java from 'js-to-java';
-
+import { ProviderServiceOption, Service } from './service';
 
 export interface ProviderOptions {
   application?: string;
@@ -150,8 +146,6 @@ export class Provider {
       const inv = req.getData();
       if (!(inv instanceof Invocation)) return;
       
-      // const serviceId = getServiceChunkId(inv.getAttachment('path'), inv.getAttachment('group') ?? '-', inv.getAttachment('version'));
-      // const service = this.cache.get(serviceId);
       const methodName = inv.getMethodName();
       if (!methodName) return;
       const serviceId = getServiceId(inv.getAttachment('path'), inv.getAttachment('group') ?? '-', inv.getAttachment('version') ?? '0.0.0');
@@ -166,20 +160,13 @@ export class Provider {
           ...(inv.getArgs() ?? [])
         ])
       );
-      // console.log(inv.getAttachment('interface'), 'interface');
       result.setAttachment('path', inv.getAttachment('path'));
-      // result.setAttachment('interface', inv.getAttachment('interface'));
       result.setAttachment('version', inv.getAttachment('version'));
       
       res.setResult(result);
-      // console.log(res, 'response');
       const data = new Codec().encode(res) as Buffer;
-      // console.log(data);
       this.send(data, socket);
-        // console.log(serviceId, this.cache);
     }
-    // const receive = this.decoder.receive(buffer);
-    // console.log(receive);
   }
 
   /**
@@ -188,7 +175,6 @@ export class Provider {
    * @param socket 
    */
   send(data: Buffer, socket: net.Socket) {
-    // console.warn('提供者发送');
     socket.write(data);
   }
 
@@ -206,12 +192,10 @@ export class Provider {
     
     await new Promise((resolve, reject) => {
       this.server.listen(this.port, (err?: Error) => {
-        // console.log(this.port, 'port');
         if (err) return reject(err);
         return resolve();
       });
     });
     await this.publish();
-    console.log('provider done');
   }
 }

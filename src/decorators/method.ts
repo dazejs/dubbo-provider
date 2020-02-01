@@ -1,5 +1,4 @@
 import { DubboMethodMetadataStruct } from '../dubbo';
-// import { DubboMetadataStruct } from '../dubbo';
 /**
  * Comment
  *

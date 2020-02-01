@@ -1,9 +1,8 @@
 import * as zookeeper from 'node-zookeeper-client';
-import { Registry } from '../registry/registry';
 import { format as urlFormat, URL } from 'url';
 import { IP } from '../common';
+import { Registry } from '../registry/registry';
 import { Channel } from './channel';
-// import { Consumer } from './consumer';
 
 export interface ConsumerOptions {
   registry: Registry;
@@ -16,11 +15,6 @@ export interface ConsumerOptions {
 }
 
 export class Consumer {
-  // /**
-  //  * 依赖的消费者实例
-  //  */
-  // consumer: Consumer;
-
   /**
    * 接口名称
    */
@@ -52,23 +46,34 @@ export class Consumer {
    */
   channels: Map<string, Channel> = new Map();
 
+  /**
+   * 根路径
+   */
   root: string;
 
+  /**
+   * 应用名
+   */
   application: string;
 
+  /**
+   * 版本号
+   */
   version: string;
 
+  /**
+   * 注册中心实例
+   */
   registry: Registry;
 
   /**
-   * 创建调用者实例
+   * 创建实例
    * @param consumer 
    * @param interfaceName 
    * @param interfaceVersion 
    * @param interfaceGroup 
    */
   constructor(options: ConsumerOptions) {
-    // this.consumer = consumer;
     this.registry = options.registry;
     this.interfaceName = options.interfaceName;
     this.interfaceVersion = options.interfaceVersion ?? '0.0.0';
@@ -176,7 +181,6 @@ export class Consumer {
    */
   async invoke<T = any>(method: string, args: any[] = []): Promise<T> {
     const channels: Channel[] = Array.from(this.channels.values());
-    console.log(this.channels, 222);
     if (channels.length === 0) throw new Error('no providers');
     // 找到负载最低的通道进行调用
     let _picedkChannel: Channel = channels[0];
@@ -215,7 +219,6 @@ export class Consumer {
       }
     }
     await Promise.all(promises);
-    console.log(this.channels, 'this.channels');
     return list.size;
   }
 

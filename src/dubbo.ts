@@ -1,12 +1,13 @@
 import { Application } from '@dazejs/framework';
-import { DubboProvider as DubboProviderBase, DubboConsumer as DubboConsumerBase } from './base';
+import { DubboConsumer as DubboConsumerBase, DubboProvider as DubboProviderBase } from './base';
+import { Provider } from './provider';
 import { ZookeeperRegistry } from './registry';
 import { Registry } from './registry/registry';
-// import * as assert from 'assert';
-import { Provider } from './provider';
-import { Consumer } from './consumer';
 import { getServiceId } from './utils';
 
+/**
+ * supported registry types
+ */
 export type RegistryType = 'zookeeper'
 
 export interface DubboMetadataStruct {
@@ -24,18 +25,35 @@ export interface DubboMethodMetadataStruct {
 }
 
 export class Dubbo {
+  /**
+   * dazejs application instance
+   */
   app: Application;
 
+  /**
+   * providers
+   */
   providers: Map<string, Provider> = new Map();
 
-  consumers: Map<string, Consumer> = new Map();
-
+  /**
+   * registries
+   */
   registries: Map<string, Registry> = new Map();
 
+  /**
+   * Create Dubbo instance
+   * @param app
+   */
   constructor(app: Application) {
     this.app = app;
   }
 
+  /**
+   * auto setup registry
+   * @param registryName 
+   * @param type 
+   * @param options 
+   */
   private async setupRegistry(registryName: string, type: RegistryType, options: any) {
     if (!this.registries.has(registryName)) {
       const registry = this.getRegistry(type, options);
@@ -46,6 +64,10 @@ export class Dubbo {
     }
   }
 
+  /**
+   * register a provider
+   * @param DubboProvider 
+   */
   async registerProvider(DubboProvider: typeof DubboProviderBase) {
     // dubbo metadata
     const dubboMetadata: DubboMetadataStruct = Reflect.getMetadata('dubbo', DubboProvider) ?? {};
@@ -82,10 +104,13 @@ export class Dubbo {
         methods: methodNames
       }
     );
-    // this.providers.set(interfaceName, provider);
     await provider.listen();
   }
 
+  /**
+   * register a consumer
+   * @param DubboConsumer 
+   */
   async registerConsumer(DubboConsumer: typeof DubboConsumerBase) {
     // dubbo metadata
     const dubboMetadata: DubboMetadataStruct = Reflect.getMetadata('dubbo', DubboConsumer) ?? {};
@@ -111,41 +136,14 @@ export class Dubbo {
       interfaceVersion: dubboMetadata.interfaceVersion
     }]);
     await consumer.register();
-    const res = await consumer.subscribe(id);
-    console.log(res, 'count');
-
-    // const id = getServiceId(interfaceName, dubboMetadata.interfaceGroup ?? '-', dubboMetadata.interfaceVersion ?? '0.0.0');
-   
-    // if (!this.consumers.has(id)) {
-    //   const consumer = this.app.get<DubboConsumerBase>(DubboConsumer, [{
-    //     registry,
-    //     application: dubboMetadata.application,
-    //     root: dubboMetadata.root,
-    //     version: dubboMetadata.version,
-    //     interfaceName,
-    //     interfaceGroup: dubboMetadata.interfaceGroup,
-    //     interfaceVersion: dubboMetadata.interfaceVersion
-    //   }]);
-    //   await consumer.register();
-    //   const count =  await consumer.subscribe(id);
-    //   if (count === 0) {
-    //     await consumer.close();
-    //     throw new Error(`Cannot find the interface [${interfaceName}]`);
-    //   }
-    //   this.consumers.set(id, consumer);
-    // }
-    
-    // const consumer = new DubboConsumer({
-    //   registry,
-    //   application: dubboMetadata.application,
-    //   root: dubboMetadata.root,
-    //   version: dubboMetadata.version,
-    //   interfaceName,
-    //   interfaceGroup: dubboMetadata.interfaceGroup,
-    //   interfaceVersion: dubboMetadata.interfaceVersion
-    // });
+    await consumer.subscribe(id);
   }
 
+  /**
+   * get supported registry instance 
+   * @param type 
+   * @param options 
+   */
   getRegistry(type: RegistryType, options: any): Registry | undefined {
     switch(type) {
       case 'zookeeper':
@@ -154,15 +152,4 @@ export class Dubbo {
         return;
     }
   }
-
-  // async run() {
-    
-  //   // const promises: Promise<void>[] = [];
-  //   // for (const [, provider] of this.providers) {
-  //   //   promises.push(
-  //   //     provider.listen()
-  //   //   );
-  //   // }
-  //   // await Promise.all(promises);
-  // }
 }

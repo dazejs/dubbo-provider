@@ -1,29 +1,46 @@
-import { inject, Loader, Application, provide } from '@dazejs/framework';
-import { DubboProviderType, DubboConsumerType } from './symbols';
+import { Application, inject, Loader, provide } from '@dazejs/framework';
 import { Dubbo } from './dubbo';
-// import { Consumer } from './consumer';
-
+import { DubboConsumerType, DubboProviderType } from './symbols';
 
 export class DubboServiceProvider {
+  /**
+   * dazejs application instance
+   */
   app: Application;
 
+  /**
+   * inject dazejs loader
+   */
   @inject('loader') loader: Loader;
 
+  /**
+   * Create Dazejs Provider
+   * @param app 
+   */
   constructor(app: Application) {
     this.app = app;
   }
 
+  /**
+   * provide Dubbo instance
+   * @param app 
+   */
   @provide()
   dubbo(app: Application) {
     return new Dubbo(app); 
   }
   
+  /**
+   * run launch hook
+   */
   async launch() {
     await this.registerProviders();
     await this.registerConsumers();
-    // await this.app.get<Dubbo>('dubbo').run();
   }
 
+  /**
+   * register dubbo providers
+   */
   async registerProviders() {
     const dubbo = this.app.get<Dubbo>('dubbo');
     const providers = this.loader.getComponentByType(DubboProviderType) || [];
@@ -39,6 +56,9 @@ export class DubboServiceProvider {
     }
   }
 
+  /**
+   * register dubbo consumers
+   */
   async registerConsumers() {
     const dubbo = this.app.get<Dubbo>('dubbo');
     const consumers = this.loader.getComponentByType(DubboConsumerType) || [];
