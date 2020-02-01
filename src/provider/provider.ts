@@ -153,7 +153,6 @@ export class Provider {
       // const serviceId = getServiceChunkId(inv.getAttachment('path'), inv.getAttachment('group') ?? '-', inv.getAttachment('version'));
       // const service = this.cache.get(serviceId);
       const methodName = inv.getMethodName();
-      console.log(methodName, 'sadasd');
       if (!methodName) return;
       const serviceId = getServiceId(inv.getAttachment('path'), inv.getAttachment('group') ?? '-', inv.getAttachment('version') ?? '0.0.0');
       const service = this.services.get(serviceId);
@@ -207,11 +206,12 @@ export class Provider {
     
     await new Promise((resolve, reject) => {
       this.server.listen(this.port, (err?: Error) => {
-        console.log(this.port, 'port');
+        // console.log(this.port, 'port');
         if (err) return reject(err);
         return resolve();
       });
     });
     await this.publish();
+    console.log('provider done');
   }
 }

@@ -21,11 +21,11 @@ export class DubboServiceProvider {
   async launch() {
     await this.registerProviders();
     await this.registerConsumers();
-
-    await this.app.get<Dubbo>('dubbo').run();
+    // await this.app.get<Dubbo>('dubbo').run();
   }
 
   async registerProviders() {
+    const dubbo = this.app.get<Dubbo>('dubbo');
     const providers = this.loader.getComponentByType(DubboProviderType) || [];
     for (const Provider of providers) {
       const name = Reflect.getMetadata('name', Provider);
@@ -35,19 +35,22 @@ export class DubboServiceProvider {
           return this.app.get(Provider, args);
         }, true);
       }
+      await dubbo.registerProvider(Provider);
     }
   }
 
   async registerConsumers() {
+    const dubbo = this.app.get<Dubbo>('dubbo');
     const consumers = this.loader.getComponentByType(DubboConsumerType) || [];
     for (const Consumer of consumers) {
       const name = Reflect.getMetadata('name', Consumer);
-      this.app.multiton(Consumer, Consumer);
+      this.app.singleton(Consumer, Consumer);
       if (name) {
-        this.app.multiton(`dubbo.consumer.${name}`, (...args: any[]) => {
+        this.app.singleton(`dubbo.consumer.${name}`, (...args: any[]) => {
           return this.app.get(Consumer, args);
         }, true);
       }
+      await dubbo.registerConsumer(Consumer);
     }
   }
 }

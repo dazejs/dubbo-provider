@@ -1,4 +1,4 @@
-import { Invoker } from '../consumer/invoker';
+import { Consumer } from '../consumer/consumer';
 
 const PRIMITIVE_TYPE_REF = {
   void: 'V',
@@ -23,17 +23,17 @@ export class Invocation {
 
   private parameterTypesDesc: string;
 
-  private invoker?: Invoker
+  private consumer?: Consumer
 
   constructor(
     methodName?: string,
     args?: any[],
     attachments?: Record<string, any>,
-    invoker?: Invoker,
+    consumer?: Consumer,
   ) {
     this.methodName = methodName;
     this.args = args;
-    this.invoker = invoker;
+    this.consumer = consumer;
     this.attachments = attachments ?? {};
     this.initParameterDesc();
   }
@@ -46,8 +46,8 @@ export class Invocation {
     this.methodName = methodName;
   }
 
-  public getInvoker() {
-    return this.invoker;
+  public getConsumer() {
+    return this.consumer;
   }
 
   public get(key: string) {

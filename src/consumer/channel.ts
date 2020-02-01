@@ -1,6 +1,6 @@
 import * as net from 'net';
 import * as url from 'url';
-import { Invoker } from './invoker';
+import { Consumer } from './consumer';
 import { Heartbeat } from '../heartbeat';
 import { Codec } from '../codec';
 import { Request, Invocation } from '../request';
@@ -11,7 +11,7 @@ export class Channel {
   /**
    * 依赖的调用者
    */
-  invoker: Invoker;
+  consumer: Consumer;
 
   /**
    * 服务 URL
@@ -63,8 +63,8 @@ export class Channel {
    */
   heartbeatFails = 0
 
-  constructor(invoker: Invoker, service: url.URL) {
-    this.invoker = invoker;
+  constructor(consumer: Consumer, service: url.URL) {
+    this.consumer = consumer;
     this.service = service;
   }
 

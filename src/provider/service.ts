@@ -105,7 +105,7 @@ export class Service {
   }
 
   /**
-   * register service
+   * ç service
    */
   async register(): Promise<this> {
     const url = new URL('dubbo://');
@@ -135,6 +135,7 @@ export class Service {
     const interfaceCatePath = `${interfaceRootPath}/providers`;
     const interfaceProviderPath = `${interfaceCatePath}/${encodeURIComponent(providerUrl)}`;
 
+    await this.provider.registry.create(`/${this.provider.root}`, '', 0);
     await this.provider.registry.create(interfaceRootPath, '', 0);
     await this.provider.registry.create(interfaceCatePath, '', 0);
     await this.provider.registry.create(interfaceProviderPath, ipAddress, 1);

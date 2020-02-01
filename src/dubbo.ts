@@ -1,15 +1,18 @@
 import { Application } from '@dazejs/framework';
-import { DubboProvider as DubboProviderBase, DubboConsumer as DubboConsumerBase, DubboConsumer } from './base';
+import { DubboProvider as DubboProviderBase, DubboConsumer as DubboConsumerBase } from './base';
 import { ZookeeperRegistry } from './registry';
 import { Registry } from './registry/registry';
 // import * as assert from 'assert';
 import { Provider } from './provider';
 import { Consumer } from './consumer';
+import { getServiceId } from './utils';
 
 export type RegistryType = 'zookeeper'
 
 export interface DubboMetadataStruct {
   interfaceName?: string;
+  interfaceGroup?: string;
+  interfaceVersion?: string;
   registry?: string;
   application?: string;
   version?: string;
@@ -25,7 +28,7 @@ export class Dubbo {
 
   providers: Map<string, Provider> = new Map();
 
-  consumers: Map<RegistryType, Consumer> = new Map();
+  consumers: Map<string, Consumer> = new Map();
 
   registries: Map<string, Registry> = new Map();
 
@@ -79,13 +82,13 @@ export class Dubbo {
         methods: methodNames
       }
     );
-
-    this.providers.set(interfaceName, provider);
+    // this.providers.set(interfaceName, provider);
+    await provider.listen();
   }
 
-  async registerConsumer(DubboConsomer: typeof DubboConsumerBase) {
+  async registerConsumer(DubboConsumer: typeof DubboConsumerBase) {
     // dubbo metadata
-    const dubboMetadata: DubboMetadataStruct = Reflect.getMetadata('dubbo', DubboConsomer) ?? {};
+    const dubboMetadata: DubboMetadataStruct = Reflect.getMetadata('dubbo', DubboConsumer) ?? {};
     const registryName = dubboMetadata.registry ?? 'default';
     const { type = 'zookeeper', ...options } = this.app.get('config').get(`dubbo.${dubboMetadata.registry}`, {});
     delete options.port;
@@ -97,17 +100,49 @@ export class Dubbo {
     const registry = this.registries.get(registryName);
     if (!registry) throw new Error(`No registry was found with registry name: [${registryName}]!`);
 
-    this.app.make(DubboConsumer, [{
+    const id = getServiceId(interfaceName, dubboMetadata.interfaceGroup ?? '-', dubboMetadata.interfaceVersion ?? '0.0.0');
+    const consumer = this.app.get<DubboConsumerBase>(DubboConsumer, [{
       registry,
       application: dubboMetadata.application,
       root: dubboMetadata.root,
-      version: dubboMetadata.version
+      version: dubboMetadata.version,
+      interfaceName,
+      interfaceGroup: dubboMetadata.interfaceGroup,
+      interfaceVersion: dubboMetadata.interfaceVersion
     }]);
+    await consumer.register();
+    const res = await consumer.subscribe(id);
+    console.log(res, 'count');
+
+    // const id = getServiceId(interfaceName, dubboMetadata.interfaceGroup ?? '-', dubboMetadata.interfaceVersion ?? '0.0.0');
+   
+    // if (!this.consumers.has(id)) {
+    //   const consumer = this.app.get<DubboConsumerBase>(DubboConsumer, [{
+    //     registry,
+    //     application: dubboMetadata.application,
+    //     root: dubboMetadata.root,
+    //     version: dubboMetadata.version,
+    //     interfaceName,
+    //     interfaceGroup: dubboMetadata.interfaceGroup,
+    //     interfaceVersion: dubboMetadata.interfaceVersion
+    //   }]);
+    //   await consumer.register();
+    //   const count =  await consumer.subscribe(id);
+    //   if (count === 0) {
+    //     await consumer.close();
+    //     throw new Error(`Cannot find the interface [${interfaceName}]`);
+    //   }
+    //   this.consumers.set(id, consumer);
+    // }
+    
     // const consumer = new DubboConsumer({
     //   registry,
     //   application: dubboMetadata.application,
     //   root: dubboMetadata.root,
-    //   version: dubboMetadata.version
+    //   version: dubboMetadata.version,
+    //   interfaceName,
+    //   interfaceGroup: dubboMetadata.interfaceGroup,
+    //   interfaceVersion: dubboMetadata.interfaceVersion
     // });
   }
 
@@ -120,13 +155,14 @@ export class Dubbo {
     }
   }
 
-  async run() {
-    const promises: Promise<void>[] = [];
-    for (const [, provider] of this.providers) {
-      promises.push(
-        provider.listen()
-      );
-    }
-    await Promise.all(promises);
-  }
+  // async run() {
+    
+  //   // const promises: Promise<void>[] = [];
+  //   // for (const [, provider] of this.providers) {
+  //   //   promises.push(
+  //   //     provider.listen()
+  //   //   );
+  //   // }
+  //   // await Promise.all(promises);
+  // }
 }
