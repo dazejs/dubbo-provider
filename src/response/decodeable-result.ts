@@ -14,7 +14,6 @@ export class DecodeableResult extends Result {
 
   decode() {
     const flag = this.inputStream.readInt();
-    console.log(flag, ';flag');
     switch(flag) {
       case Codec.RESPONSE_NULL_VALUE:
         break;

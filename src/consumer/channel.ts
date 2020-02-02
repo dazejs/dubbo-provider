@@ -2,7 +2,6 @@ import java from 'js-to-java';
 import * as net from 'net';
 import * as url from 'url';
 import { Codec } from '../codec';
-import { Heartbeat } from '../heartbeat';
 import { Invocation, Request } from '../request';
 import { Response, Result } from '../response';
 import { Consumer } from './consumer';
@@ -207,7 +206,11 @@ export class Channel {
         const writeTime = time - this.lastWriteTimestamp;
         if (readTime > heartbeat || writeTime > heartbeat) {
           this.setLastWriteTimestamp();
-          return this.send(Heartbeat.encode());
+          const req = new Request();
+          req.setEvent(true);
+          const payload = new Codec().encode(req);
+          if (!payload) return;
+          return this.send(payload);
         }
         if (readTime > heartbeatTimeout) {
           this.heartbeatFails++;
@@ -278,6 +281,7 @@ export class Channel {
         this.callbacks.delete(req.getId());
         resolve(data);
       });
+
       const payload = new Codec().encode(req) as Buffer;
       this.send(payload);
     });

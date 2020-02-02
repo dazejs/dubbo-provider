@@ -186,7 +186,6 @@ export class Provider {
     this.server = net.createServer((socket) => {
       socket.on('data', async (data) => {
         await this.onMessage(data, socket);
-        socket.end();
       });
     });
     
