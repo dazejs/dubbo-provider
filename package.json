@@ -9,7 +9,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "prod": "cross-env DAZE_ENV=prod node dist/index.js",
-    "example": "cross-env DAZE_ENV=prod ts-node example/index.ts"
+    "example": "cross-env DAZE_ENV=prod ts-node example/index.ts",
+    "commitlint": "commitlint -e $GIT_PARAMS"
   },
   "engines": {
     "node": ">=10.15.0"
@@ -18,6 +19,8 @@
     "@dazejs/framework": ">=2.2.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
     "@dazejs/framework": "^2.2.1",
     "@types/compare-versions": "^3.3.0",
     "@types/js-to-java": "^2.4.0",
@@ -25,8 +28,10 @@
     "@types/node-zookeeper-client": "^0.2.6",
     "@typescript-eslint/eslint-plugin": "^2.3.0",
     "@typescript-eslint/parser": "^2.3.0",
+    "commitlint": "^8.3.5",
     "cross-env": "^5.2.0",
     "eslint": "^5.2.0",
+    "husky": "^4.2.1",
     "nodemon": "^1.18.3",
     "ts-node": "^8.4.1",
     "typescript": "^3.7.4"
