@@ -9,7 +9,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "prod": "cross-env DAZE_ENV=prod node dist/index.js",
-    "example": "cross-env DAZE_ENV=prod ts-node example/index.ts",
+    "example": "cross-env DAZE_ENV=prod ts-node example/src/index.ts",
     "commitlint": "commitlint -e $GIT_PARAMS"
   },
   "engines": {
@@ -23,6 +23,7 @@
     "@commitlint/config-conventional": "^8.3.4",
     "@dazejs/framework": "^2.2.1",
     "@types/compare-versions": "^3.3.0",
+    "@types/debug": "^4.1.5",
     "@types/js-to-java": "^2.4.0",
     "@types/node": "^12.7.5",
     "@types/node-zookeeper-client": "^0.2.6",
@@ -38,6 +39,7 @@
   },
   "dependencies": {
     "compare-versions": "^3.5.1",
+    "debug": "^4.1.1",
     "hessian.js": "^2.9.0",
     "js-to-java": "^2.6.1",
     "node-zookeeper-client": "^1.1.0",

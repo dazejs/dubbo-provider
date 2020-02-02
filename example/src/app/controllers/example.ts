@@ -8,7 +8,7 @@ export default class extends Controller {
 
   @http.get()
   async index() {
-    const res = await this.demoConsumer.invoke('sayHello', ['xxxx']);
+    const res = await this.demoConsumer.invoke('sayHello', ['yyy']);
     return res;
   }
 }

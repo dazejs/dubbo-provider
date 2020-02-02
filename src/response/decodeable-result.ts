@@ -43,7 +43,6 @@ export class DecodeableResult extends Result {
 
   handleValue(inputStream: any) {
     const value = inputStream.read();
-    console.log(value, 'value');
     this.setValue(value);
   }
 

@@ -143,15 +143,22 @@ export class Provider {
     this.setLastReadTimestamp();
     const req = new Codec().decode(buffer);
     if (req instanceof Request) {
+      if (req.isHeartbeat()) {
+        const res = new Response(req.getId());
+        res.setStatus(Response.OK);
+        res.setVersion(req.getVersion() as string);
+        res.setEvent(true);
+        res.setResult(0x4e);
+        const data = new Codec().encode(res);
+        return data && this.send(data, socket);
+      }
       const inv = req.getData();
       if (!(inv instanceof Invocation)) return;
-      
       const methodName = inv.getMethodName();
       if (!methodName) return;
       const serviceId = getServiceId(inv.getAttachment('path'), inv.getAttachment('group') ?? '-', inv.getAttachment('version') ?? '0.0.0');
       const service = this.services.get(serviceId);
       if (!service) return;
-
       const res = new Response(req.getId());
       res.setStatus(Response.OK);
       res.setVersion(req.getVersion() as string);
@@ -164,8 +171,8 @@ export class Provider {
       result.setAttachment('version', inv.getAttachment('version'));
       
       res.setResult(result);
-      const data = new Codec().encode(res) as Buffer;
-      this.send(data, socket);
+      const data = new Codec().encode(res);
+      return data && this.send(data, socket);
     }
   }
 

@@ -52,7 +52,7 @@ export class DecodeableInvocation extends Invocation {
     }
   }
 
-  getDubboNormalizeArgsLength(desc: string, i: number) {
+  getDubboNormalizeArgsLength(desc: string, i: number): number {
     if (!desc) return i;
     const dot = desc.charAt(0);
     switch (dot) {

@@ -4,6 +4,7 @@ import { IP } from '../common';
 import { Registry } from '../registry/registry';
 import { Channel } from './channel';
 
+
 export interface ConsumerOptions {
   registry: Registry;
   application?: string;

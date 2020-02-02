@@ -1,6 +1,8 @@
 import * as zookeeper from 'node-zookeeper-client';
 import { Registry } from './registry';
+import debug from 'debug';
 
+const log = debug('dubbo-provider:zookeeper');
 
 export interface ZookeeperRegistryOptions {
   host: string;
@@ -21,11 +23,17 @@ export class ZookeeperRegistry extends Registry {
   client: zookeeper.Client;
 
   /**
+   * options
+   */
+  options: ZookeeperRegistryOptions;
+
+  /**
    * 创建注册实例
    * @param options 
    */
   constructor(options: ZookeeperRegistryOptions) {
     super();
+    this.options = options;
     this.client = zookeeper.createClient(options.host, {});
   }
 
@@ -33,8 +41,10 @@ export class ZookeeperRegistry extends Registry {
    * 连接注册中心
    */
   connect(): Promise<void> {
+    log(`connecting zookeeper server: [${this.options.host}]`);
     return new Promise((resolve) => {
       this.client.once('connected', () => {
+        log(`zookeeper server connected`);
         this.connected = true;
         resolve();
       });
@@ -63,6 +73,7 @@ export class ZookeeperRegistry extends Registry {
     const node: string = await new Promise((resolve, reject) => {
       this.client.create(nodePath, Buffer.from(value), mode, (err, node) => {
         if (err) return reject(err);
+        log(`zookeeper node created: [${nodePath}]`);
         resolve(node);
       });
     });

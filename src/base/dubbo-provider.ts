@@ -3,5 +3,5 @@ import { DubboProviderType } from '../symbols';
 
 @componentType(DubboProviderType)
 export class DubboProvider {
-
+  [key: string]: any;
 }

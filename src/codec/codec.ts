@@ -115,6 +115,7 @@ export class Codec {
       return res;
     } else {
       const req = new Request(id);
+      
       req.setVersion(Version.getProtocolVersion());
       req.setTwoWay((flag & Codec.FLAG_TWOWAY) !== 0);
       if ((flag & Codec.FLAG_EVENT) !== 0) {
@@ -191,11 +192,11 @@ export class Codec {
 
   /**
    * encode event data
-   * @param encoder 
+   * @param input
    * @param data 
    */
-  encodeEventData(encoder: any, data: any) {
-    encoder.write(data);
+  encodeEventData(input: any, data: any) {
+    input.write(data);
   }
 
   /**
@@ -256,7 +257,6 @@ export class Codec {
     this.checkPayload(body.length);
 
     Bytes.int2bytes(body.length, header, 12);
-
     return Buffer.concat([header, body]);
   }
 
@@ -321,7 +321,7 @@ export class Codec {
    */
   sieveUnnecessaryAttachments(inv: Invocation) {
     const attachments = inv.getAttachments() ?? {};
-    const attachmentsToPass = {};
+    const attachmentsToPass: Record<string, any> = {};
 
     for (const key of Object.keys(attachments)) {
       if (!key.startsWith(this.DUBBO_INVOCATION_PREFIX)) {

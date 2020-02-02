@@ -5,7 +5,7 @@ import { Codec } from '../codec';
 import { Invocation, Request } from '../request';
 import { Response, Result } from '../response';
 import { Consumer } from './consumer';
- 
+
 export class Channel {
   /**
    * 依赖的调用者
@@ -281,7 +281,6 @@ export class Channel {
         this.callbacks.delete(req.getId());
         resolve(data);
       });
-
       const payload = new Codec().encode(req) as Buffer;
       this.send(payload);
     });

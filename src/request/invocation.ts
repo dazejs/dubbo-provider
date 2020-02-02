@@ -1,6 +1,6 @@
 import { Consumer } from '../consumer/consumer';
 
-const PRIMITIVE_TYPE_REF = {
+const PRIMITIVE_TYPE_REF: Record<string, string> = {
   void: 'V',
   boolean: 'Z',
   byte: 'B',
@@ -79,7 +79,6 @@ export class Invocation {
         desc.push(';');
       }
     }
-    // console.log(desc.join(''));
     this.parameterTypesDesc = desc.join('');
     return;
   }

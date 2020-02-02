@@ -101,11 +101,11 @@ export class Service {
   }
 
   async performHandler(methodName: string, args: any[]) {
-    return this.handler?.[methodName](...args);
+    return this.handler?.[methodName]?.(...args);
   }
 
   /**
-   * ç service
+   * register
    */
   async register(): Promise<this> {
     const url = new URL('dubbo://');
