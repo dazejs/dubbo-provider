@@ -1,4 +1,35 @@
-node_modules
-.vscode
-.idea
-src
+# dependencies
+node_modules/
+
+# IDE
+/.idea
+/.awcache
+/.vscode
+*.code-workspace
+
+# src
+/src
+
+
+# logs
+logs/*.log
+**/logs/**.log
+
+# misc
+.DS_Store
+lerna-debug.log
+npm-debug.log
+yarn-error.log
+/__debug__
+.clinic
+
+# test
+/coverage
+/__test__
+
+# future and deprecated
+FUTURE_*
+DEPRECATED_*
+
+# dev example
+/example
