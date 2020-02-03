@@ -10,7 +10,8 @@
     "watch": "tsc -w",
     "prod": "cross-env DAZE_ENV=prod node dist/index.js",
     "example": "cross-env DAZE_ENV=prod DEBUG=dubbo-provider:* ts-node example/src/index.ts",
-    "commitlint": "commitlint -e $GIT_PARAMS"
+    "commitlint": "commitlint -e $GIT_PARAMS",
+    "prepublish": "npm run build"
   },
   "engines": {
     "node": ">=10.15.0"
