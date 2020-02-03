@@ -5,11 +5,11 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "npm run dev",
-    "dev": "cross-env DAZE_ENV=dev DEBUG=daze-framework:* nodemon --signal SIGTERM --exec ts-node src/index.ts --source-map --preserve-symlinks",
+    "dev": "cross-env DAZE_ENV=dev DEBUG=dubbo-provider:* nodemon --signal SIGTERM --exec ts-node src/index.ts --source-map --preserve-symlinks",
     "build": "tsc",
     "watch": "tsc -w",
     "prod": "cross-env DAZE_ENV=prod node dist/index.js",
-    "example": "cross-env DAZE_ENV=prod ts-node example/src/index.ts",
+    "example": "cross-env DAZE_ENV=prod DEBUG=dubbo-provider:* ts-node example/src/index.ts",
     "commitlint": "commitlint -e $GIT_PARAMS"
   },
   "engines": {

@@ -6,12 +6,13 @@
         "esnext"
       ],
       "outDir": "dist",
+      "baseUrl": "./",
       "allowJs": false,
       "declaration": true,
       "sourceMap": true,
       "removeComments": true,
       "strict": true,
-      "noImplicitAny": true,
+      "noImplicitAny": false,
       "strictNullChecks": true,
       "strictFunctionTypes": true,
       "strictPropertyInitialization": false,
@@ -24,14 +25,15 @@
       "allowSyntheticDefaultImports": true,
       "esModuleInterop": true,
       "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
       "skipLibCheck": true,
-      "preserveSymlinks": true
+      "preserveSymlinks": true,
     },
     "include": [
       "src/**/*.ts",
       "types/*.d.ts",
     ],
     "exclude": [
-      "node_modules/**/*"
+      "node_modules",
     ]
   }
