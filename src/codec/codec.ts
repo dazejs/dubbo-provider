@@ -53,33 +53,33 @@ export class Codec {
   private MAGIC_LOW = 0xbb;
 
   /**
-   * init decode buffer
-   */
-  private decodeBuffer: Buffer = Buffer.alloc(0);
-
-  /**
    * decode data
+   * 在并发的 TCP 数据传输中，会出现粘包的现象
+   * 具体需要发送多少数据，什么时候发送，是由 TCP 拥塞控制策略来决定的。
+   * 接收到的数据包中可能包含了多个包的数据，所以我们需要对包进行拆解
+   * 返回拆解后的数据数组（每个包的数据作为一个单元）
    * @param data 
    */
   decode(buffer: Buffer) {
-    this.decodeBuffer = Buffer.concat([this.decodeBuffer, buffer]);
-    let length = this.decodeBuffer.length;
+    let packet = Buffer.alloc(0);
+    packet = Buffer.concat([packet, buffer]);
+    let length = packet.length;
     const chunks: (Request | Response)[] = [];
-    while (this.decodeBuffer.length >= this.HEADER_LENGTH) {
+    while (packet.length >= this.HEADER_LENGTH) {
       // check magic number.
-      if (this.decodeBuffer[0] !== this.MAGIC_HIGH || this.decodeBuffer[1] !== this.MAGIC_LOW) {
-        const magicHighIndex = this.decodeBuffer.indexOf(this.decodeBuffer[0]);
-        const magicLowIndex = this.decodeBuffer.indexOf(this.decodeBuffer[1]);
+      if (packet[0] !== this.MAGIC_HIGH || packet[1] !== this.MAGIC_LOW) {
+        const magicHighIndex = packet.indexOf(packet[0]);
+        const magicLowIndex = packet.indexOf(packet[1]);
         if (magicHighIndex === -1 || magicLowIndex === -1) return;
         if (magicHighIndex !== -1 && magicLowIndex !== -1 && magicLowIndex - magicHighIndex === 1) {
-          this.decodeBuffer = this.decodeBuffer.slice(magicHighIndex);
-          length = this.decodeBuffer.length;
+          packet = packet.slice(magicHighIndex);
+          length = packet.length;
         }
         return;
       }
-      if (this.decodeBuffer[0] === this.MAGIC_HIGH && this.decodeBuffer[1] === this.MAGIC_LOW) {
+      if (packet[0] === this.MAGIC_HIGH && packet[1] === this.MAGIC_LOW) {
         if (length < this.HEADER_LENGTH) return;
-        const header = this.decodeBuffer.slice(0, this.HEADER_LENGTH);
+        const header = packet.slice(0, this.HEADER_LENGTH);
         const bodyLengthBuffer = Buffer.from([
           header[12],
           header[13],
@@ -88,9 +88,9 @@ export class Codec {
         ]);
         const bodyLength = Bytes.fromBytes4(bodyLengthBuffer);
         if (this.HEADER_LENGTH + bodyLength > length) return;
-        const chunkBuffer = this.decodeBuffer.slice(0, this.HEADER_LENGTH + bodyLength);
-        this.decodeBuffer = this.decodeBuffer.slice(this.HEADER_LENGTH + bodyLength);
-        length = this.decodeBuffer.length;
+        const chunkBuffer = packet.slice(0, this.HEADER_LENGTH + bodyLength);
+        packet = packet.slice(this.HEADER_LENGTH + bodyLength);
+        length = packet.length;
         chunks.push(
           this.decodeBody(chunkBuffer)
         );
