@@ -23,9 +23,9 @@ export interface ResponseResult {
 
 export class Codec {
   // header length.
-  private HEADER_LENGTH = 16;
+  private static HEADER_LENGTH = 16;
   // magic header.
-  private MAGIC = 0xdabb;
+  private static MAGIC = 0xdabb;
   // message flag.
   public static FLAG_REQUEST = 0x80;
   public static FLAG_TWOWAY = 0x40;
@@ -34,7 +34,7 @@ export class Codec {
   // 由于目前只支持 Hessian2
   // 这边先写死 Hessian2Serialization
   // com.alibaba.dubbo.common.serialize.support.hessian.Hessian2Serialization 中定义
-  private HESSIAN2_SERIALIZATION_CONTENT_ID = 2;
+  private static HESSIAN2_SERIALIZATION_CONTENT_ID = 2;
 
   // Response
   public static RESPONSE_WITH_EXCEPTION = 0;
@@ -44,13 +44,15 @@ export class Codec {
   public static RESPONSE_VALUE_WITH_ATTACHMENTS = 4;
   public static RESPONSE_NULL_VALUE_WITH_ATTACHMENTS = 5;
 
-  private DUBBO_VERSION = Version.getProtocolVersion();
+  private static DUBBO_VERSION = Version.getProtocolVersion();
 
   // ignore ATTACH
-  private DUBBO_INVOCATION_PREFIX = '_DUBBO_IGNORE_ATTACH_';
+  private static DUBBO_INVOCATION_PREFIX = '_DUBBO_IGNORE_ATTACH_';
 
-  private MAGIC_HIGH = 0xda;
-  private MAGIC_LOW = 0xbb;
+  private static MAGIC_HIGH = 0xda;
+  private static MAGIC_LOW = 0xbb;
+
+  private packet: Buffer = Buffer.alloc(0);
 
   /**
    * decode data
@@ -61,25 +63,22 @@ export class Codec {
    * @param data 
    */
   decode(buffer: Buffer) {
-    let packet = Buffer.alloc(0);
-    packet = Buffer.concat([packet, buffer]);
-    let length = packet.length;
+    this.packet = Buffer.concat([this.packet, buffer], this.packet.length + buffer.length);
+    // let length = this.packet.length;
     const chunks: (Request | Response)[] = [];
-    while (packet.length >= this.HEADER_LENGTH) {
+    while (this.packet.length >= Codec.HEADER_LENGTH) {
       // check magic number.
-      if (packet[0] !== this.MAGIC_HIGH || packet[1] !== this.MAGIC_LOW) {
-        const magicHighIndex = packet.indexOf(packet[0]);
-        const magicLowIndex = packet.indexOf(packet[1]);
-        if (magicHighIndex === -1 || magicLowIndex === -1) return;
-        if (magicHighIndex !== -1 && magicLowIndex !== -1 && magicLowIndex - magicHighIndex === 1) {
-          packet = packet.slice(magicHighIndex);
-          length = packet.length;
+      if (this.packet[0] !== Codec.MAGIC_HIGH || this.packet[1] !== Codec.MAGIC_LOW) {
+        for (let i = 0; i < this.packet.length - 1; i++) {
+          if (this.packet[i] === Codec.MAGIC_HIGH && this.packet[i + 1] === Codec.MAGIC_LOW) {
+            this.packet = this.packet.slice(i);
+            break;
+          }
         }
-        return;
       }
-      if (packet[0] === this.MAGIC_HIGH && packet[1] === this.MAGIC_LOW) {
-        if (length < this.HEADER_LENGTH) return;
-        const header = packet.slice(0, this.HEADER_LENGTH);
+      if (this.packet[0] === Codec.MAGIC_HIGH && this.packet[1] === Codec.MAGIC_LOW) {
+        if (this.packet.length < Codec.HEADER_LENGTH) return chunks;
+        const header = this.packet.slice(0, Codec.HEADER_LENGTH);
         const bodyLengthBuffer = Buffer.from([
           header[12],
           header[13],
@@ -87,13 +86,15 @@ export class Codec {
           header[15],
         ]);
         const bodyLength = Bytes.fromBytes4(bodyLengthBuffer);
-        if (this.HEADER_LENGTH + bodyLength > length) return;
-        const chunkBuffer = packet.slice(0, this.HEADER_LENGTH + bodyLength);
-        packet = packet.slice(this.HEADER_LENGTH + bodyLength);
-        length = packet.length;
+        if (Codec.HEADER_LENGTH + bodyLength > this.packet.length) break;
+        const chunkBuffer = this.packet.slice(0, Codec.HEADER_LENGTH + bodyLength);
+        this.packet = this.packet.slice(Codec.HEADER_LENGTH + bodyLength);
+        // length = packet.length;
         chunks.push(
           this.decodeBody(chunkBuffer)
         );
+      } else {
+        break;
       }
     }
     return chunks;
@@ -115,7 +116,7 @@ export class Codec {
       const status = dataBuffer[3];
       res.setStatus(status);
       if (status === Response.OK) {
-        const input = new Hessian.DecoderV2(dataBuffer.slice(this.HEADER_LENGTH));
+        const input = new Hessian.DecoderV2(dataBuffer.slice(Codec.HEADER_LENGTH));
         const result = new DecodeableResult(input);
         result.decode();
         res.setResult(result);
@@ -130,7 +131,7 @@ export class Codec {
         req.setEvent(true);
       }
       let data: any;
-      const input = new Hessian.DecoderV2(dataBuffer.slice(this.HEADER_LENGTH));
+      const input = new Hessian.DecoderV2(dataBuffer.slice(Codec.HEADER_LENGTH));
       if (req.isEvent()) {
         data = this.decodeEventData(input);
       } else {
@@ -170,12 +171,12 @@ export class Codec {
    */
   encodeRequest(req: Request) {
     // header
-    const header = Buffer.alloc(this.HEADER_LENGTH);
+    const header = Buffer.alloc(Codec.HEADER_LENGTH);
     // set magic number.
-    header[1] = this.MAGIC;
-    header[0] = this.MAGIC >>> 8;
+    header[1] = Codec.MAGIC;
+    header[0] = Codec.MAGIC >>> 8;
     // set request and serialization flag.
-    header[2] = Codec.FLAG_REQUEST | this.HESSIAN2_SERIALIZATION_CONTENT_ID;
+    header[2] = Codec.FLAG_REQUEST | Codec.HESSIAN2_SERIALIZATION_CONTENT_ID;
     if (req.isTwoWay()) {
       header[2] |= Codec.FLAG_TWOWAY;
     }
@@ -189,7 +190,7 @@ export class Codec {
     if (req.isEvent()) {
       this.encodeEventData(out, req.getData());
     } else {
-      this.encodeRequestData(out, req.getData(), this.DUBBO_VERSION);
+      this.encodeRequestData(out, req.getData(), Codec.DUBBO_VERSION);
     }
 
     const body = out.byteBuffer._bytes.slice(0, out.byteBuffer._offset);
@@ -233,12 +234,12 @@ export class Codec {
 
   encodeResponse(res: Response) {
     // header
-    const header = Buffer.alloc(this.HEADER_LENGTH);
+    const header = Buffer.alloc(Codec.HEADER_LENGTH);
     // set magic number.
-    header[1] = this.MAGIC;
-    header[0] = this.MAGIC >>> 8;
+    header[1] = Codec.MAGIC;
+    header[0] = Codec.MAGIC >>> 8;
     // set request and serialization flag.
-    header[2] = this.HESSIAN2_SERIALIZATION_CONTENT_ID;
+    header[2] = Codec.HESSIAN2_SERIALIZATION_CONTENT_ID;
     if (res.isHeartbeat()) {
       header[2] |= Codec.FLAG_EVENT;
     }
@@ -254,7 +255,7 @@ export class Codec {
       if (res.isHeartbeat()) {
         this.encodeEventData(out, res.getResult());
       } else {
-        this.encodeResponseData(out, res.getResult(), this.DUBBO_VERSION);
+        this.encodeResponseData(out, res.getResult(), Codec.DUBBO_VERSION);
       }
     } else {
       out.write(res.getErrorMessage());
@@ -306,7 +307,7 @@ export class Codec {
     if (attach) {
       out.write({
         ...(result?.attachments ?? {}),
-        dubbo: this.DUBBO_VERSION
+        dubbo: Codec.DUBBO_VERSION
       });
     }
   }
@@ -332,7 +333,7 @@ export class Codec {
     const attachmentsToPass: Record<string, any> = {};
 
     for (const key of Object.keys(attachments)) {
-      if (!key.startsWith(this.DUBBO_INVOCATION_PREFIX)) {
+      if (!key.startsWith(Codec.DUBBO_INVOCATION_PREFIX)) {
         attachmentsToPass[key] = attachments[key];
       }
     }

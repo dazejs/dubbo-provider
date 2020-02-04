@@ -275,16 +275,15 @@ export class Channel {
         this.callbacks.delete(req.getId());
         return reject(new Error('rpc invoke timeout:' + this.getServiceTimeout()));
       }, this.getServiceTimeout());
-
       this.callbacks.set(req.getId(), (data: any) => {
         clearTimeout(timer);
+        this.callbacks.delete(req.getId());
         this.workload--;
         this.heartbeatFails = 0;
-        this.callbacks.delete(req.getId());
         return resolve(data);
       });
-      const payload = this.codec.encode(req) as Buffer;
-      this.send(payload);
+      const payload = this.codec.encode(req);
+      payload && this.send(payload);
     });
   }
 
@@ -308,6 +307,7 @@ export class Channel {
     for (const res of reses) {
       if (res instanceof Response) {
         const requestId = res.getId();
+        if (!this.callbacks.has(requestId)) console.log(12312434, res.isEvent());
         if (this.callbacks.has(requestId)) {
           const fn = this.callbacks.get(requestId);
           const result = res.getResult();
