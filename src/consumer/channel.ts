@@ -62,6 +62,11 @@ export class Channel {
    */
   heartbeatFails = 0
 
+  /**
+   * codec instance
+   */
+  codec = new Codec();
+
   constructor(consumer: Consumer, service: url.URL) {
     this.consumer = consumer;
     this.service = service;
@@ -208,7 +213,7 @@ export class Channel {
           this.setLastWriteTimestamp();
           const req = new Request();
           req.setEvent(true);
-          const payload = new Codec().encode(req);
+          const payload = this.codec.encode(req);
           if (!payload) return;
           return this.send(payload);
         }
@@ -264,14 +269,11 @@ export class Channel {
 
     this.workload++;
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.workload--;
         this.callbacks.delete(req.getId());
-        resolve({
-          code: 408,
-          message: 'rpc invoke timeout:' + this.getServiceTimeout(),
-        });
+        return reject(new Error('rpc invoke timeout:' + this.getServiceTimeout()));
       }, this.getServiceTimeout());
 
       this.callbacks.set(req.getId(), (data: any) => {
@@ -279,9 +281,9 @@ export class Channel {
         this.workload--;
         this.heartbeatFails = 0;
         this.callbacks.delete(req.getId());
-        resolve(data);
+        return resolve(data);
       });
-      const payload = new Codec().encode(req) as Buffer;
+      const payload = this.codec.encode(req) as Buffer;
       this.send(payload);
     });
   }
@@ -302,16 +304,18 @@ export class Channel {
   onMessage(buffer: Buffer) {
     this.setLastReadTimestamp();
     // const receive = this.decoder.receive(buffer);
-    const res = new Codec().decode(buffer) as Response;
-    if (res) {
-      const requestId = res.getId();
-      if (this.callbacks.has(requestId)) {
-        const fn = this.callbacks.get(requestId);
-        const result = res.getResult();
-        if (result instanceof Result) {
-          fn(result.getValue());
-        } else {
-          fn(result);
+    const reses = this.codec.decode(buffer) ?? [];
+    for (const res of reses) {
+      if (res instanceof Response) {
+        const requestId = res.getId();
+        if (this.callbacks.has(requestId)) {
+          const fn = this.callbacks.get(requestId);
+          const result = res.getResult();
+          if (result instanceof Result) {
+            fn(result.getValue());
+          } else {
+            fn(result);
+          }
         }
       }
     }

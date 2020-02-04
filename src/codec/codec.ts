@@ -53,27 +53,33 @@ export class Codec {
   private MAGIC_LOW = 0xbb;
 
   /**
+   * init decode buffer
+   */
+  private decodeBuffer: Buffer = Buffer.alloc(0);
+
+  /**
    * decode data
    * @param data 
    */
   decode(buffer: Buffer) {
-    let packet = Buffer.concat([Buffer.alloc(0), buffer]);
-    let length = packet.length;
-    while (packet.length >= this.HEADER_LENGTH) {
+    this.decodeBuffer = Buffer.concat([this.decodeBuffer, buffer]);
+    let length = this.decodeBuffer.length;
+    const chunks: (Request | Response)[] = [];
+    while (this.decodeBuffer.length >= this.HEADER_LENGTH) {
       // check magic number.
-      if (packet[0] !== this.MAGIC_HIGH || packet[1] !== this.MAGIC_LOW) {
-        const magicHighIndex = packet.indexOf(packet[0]);
-        const magicLowIndex = packet.indexOf(packet[1]);
+      if (this.decodeBuffer[0] !== this.MAGIC_HIGH || this.decodeBuffer[1] !== this.MAGIC_LOW) {
+        const magicHighIndex = this.decodeBuffer.indexOf(this.decodeBuffer[0]);
+        const magicLowIndex = this.decodeBuffer.indexOf(this.decodeBuffer[1]);
         if (magicHighIndex === -1 || magicLowIndex === -1) return;
         if (magicHighIndex !== -1 && magicLowIndex !== -1 && magicLowIndex - magicHighIndex === 1) {
-          packet = packet.slice(magicHighIndex);
-          length = packet.length;
+          this.decodeBuffer = this.decodeBuffer.slice(magicHighIndex);
+          length = this.decodeBuffer.length;
         }
         return;
       }
-      if (packet[0] === this.MAGIC_HIGH && packet[1] === this.MAGIC_LOW) {
+      if (this.decodeBuffer[0] === this.MAGIC_HIGH && this.decodeBuffer[1] === this.MAGIC_LOW) {
         if (length < this.HEADER_LENGTH) return;
-        const header = packet.slice(0, this.HEADER_LENGTH);
+        const header = this.decodeBuffer.slice(0, this.HEADER_LENGTH);
         const bodyLengthBuffer = Buffer.from([
           header[12],
           header[13],
@@ -82,13 +88,15 @@ export class Codec {
         ]);
         const bodyLength = Bytes.fromBytes4(bodyLengthBuffer);
         if (this.HEADER_LENGTH + bodyLength > length) return;
-        const dataBuffer = packet.slice(0, this.HEADER_LENGTH + bodyLength);
-        packet = packet.slice(this.HEADER_LENGTH + bodyLength);
-        length = packet.length;
-        return this.decodeBody(dataBuffer);
+        const chunkBuffer = this.decodeBuffer.slice(0, this.HEADER_LENGTH + bodyLength);
+        this.decodeBuffer = this.decodeBuffer.slice(this.HEADER_LENGTH + bodyLength);
+        length = this.decodeBuffer.length;
+        chunks.push(
+          this.decodeBody(chunkBuffer)
+        );
       }
     }
-    return;
+    return chunks;
   }
 
   /**

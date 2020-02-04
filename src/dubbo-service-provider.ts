@@ -13,19 +13,22 @@ export class DubboServiceProvider {
    */
   @inject('loader') loader: Loader;
 
+  // dubbo: Dubbo;
+
   /**
    * Create Dazejs Provider
    * @param app 
    */
   constructor(app: Application) {
     this.app = app;
+    // this.dubbo = new Dubbo(app);
   }
 
   /**
    * provide Dubbo instance
    * @param app 
    */
-  @provide()
+  @provide('dubbo')
   dubbo(app: Application) {
     return new Dubbo(app); 
   }

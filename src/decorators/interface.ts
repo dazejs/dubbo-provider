@@ -1,4 +1,5 @@
 import { DubboMetadataStruct } from '../dubbo';
+import { Metadata } from '@dazejs/framework';
 /**
  * Comment
  *
@@ -6,9 +7,9 @@ import { DubboMetadataStruct } from '../dubbo';
  */
 export function InterfaceName(name: string): ClassDecorator {
   return function <TFunction extends Function> (target: TFunction): TFunction {
-    const dubbo: DubboMetadataStruct = Reflect.getMetadata('dubbo', target) || {};
+    const dubbo: DubboMetadataStruct = Metadata.get('dubbo', target) || {};
     dubbo.interfaceName = name;
-    Reflect.defineMetadata('dubbo', dubbo, target);
+    Metadata.set('dubbo', dubbo, target);
     return target;
   };
 }

@@ -68,6 +68,11 @@ export class Provider {
   lastWriteTimestamp = Date.now();
 
   /**
+   * codec instance
+   */
+  codec = new Codec();
+
+  /**
    * Create provider instance
    * @param options 
    */
@@ -141,38 +146,40 @@ export class Provider {
    */
   async onMessage(buffer: Buffer, socket: net.Socket) {
     this.setLastReadTimestamp();
-    const req = new Codec().decode(buffer);
-    if (req instanceof Request) {
-      if (req.isHeartbeat()) {
+    const reqs = this.codec.decode(buffer) ?? [];
+    for (const req of reqs) {
+      if (req instanceof Request) {
+        if (req.isHeartbeat()) {
+          const res = new Response(req.getId());
+          res.setStatus(Response.OK);
+          res.setVersion(req.getVersion() as string);
+          res.setEvent(true);
+          res.setResult(0x4e);
+          const data = this.codec.encode(res);
+          return data && this.send(data, socket);
+        }
+        const inv = req.getData();
+        if (!(inv instanceof Invocation)) return;
+        const methodName = inv.getMethodName();
+        if (!methodName) return;
+        const serviceId = getServiceId(inv.getAttachment('path'), inv.getAttachment('group') ?? '-', inv.getAttachment('version') ?? '0.0.0');
+        const service = this.services.get(serviceId);
+        if (!service) return;
         const res = new Response(req.getId());
         res.setStatus(Response.OK);
         res.setVersion(req.getVersion() as string);
-        res.setEvent(true);
-        res.setResult(0x4e);
-        const data = new Codec().encode(res);
-        return data && this.send(data, socket);
+        const result = new Result(
+          await service.performHandler(methodName, [
+            ...(inv.getArgs() ?? [])
+          ])
+        );
+        result.setAttachment('path', inv.getAttachment('path'));
+        result.setAttachment('version', inv.getAttachment('version'));
+
+        res.setResult(result);
+        const data = this.codec.encode(res);
+        data && this.send(data, socket);
       }
-      const inv = req.getData();
-      if (!(inv instanceof Invocation)) return;
-      const methodName = inv.getMethodName();
-      if (!methodName) return;
-      const serviceId = getServiceId(inv.getAttachment('path'), inv.getAttachment('group') ?? '-', inv.getAttachment('version') ?? '0.0.0');
-      const service = this.services.get(serviceId);
-      if (!service) return;
-      const res = new Response(req.getId());
-      res.setStatus(Response.OK);
-      res.setVersion(req.getVersion() as string);
-      const result = new Result(
-        await service.performHandler(methodName, [
-          ...(inv.getArgs() ?? [])
-        ])
-      );
-      result.setAttachment('path', inv.getAttachment('path'));
-      result.setAttachment('version', inv.getAttachment('version'));
-      
-      res.setResult(result);
-      const data = new Codec().encode(res);
-      return data && this.send(data, socket);
     }
   }
 
