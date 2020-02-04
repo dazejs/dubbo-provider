@@ -5,6 +5,7 @@ import { Registry } from '../registry/registry';
 import { Invocation, Request } from '../request';
 import { Response, Result } from '../response';
 import { getServiceId } from '../utils';
+import { Constants } from '../common/constants';
 import { ProviderServiceOption, Service } from './service';
 
 export interface ProviderOptions {
@@ -153,8 +154,7 @@ export class Provider {
           const res = new Response(req.getId());
           res.setStatus(Response.OK);
           res.setVersion(req.getVersion() as string);
-          res.setEvent(true);
-          res.setResult(0x4e);
+          res.setEvent(Constants.HEARTBEAT_EVENT);
           const data = this.codec.encode(res);
           return data && this.send(data, socket);
         }

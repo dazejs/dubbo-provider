@@ -1,4 +1,5 @@
 
+import { Constants } from '../common/constants';
 
 export class Response {
 
@@ -49,7 +50,7 @@ export class Response {
     return this.event;
   }
 
-  public setEvent(event: string | boolean) {
+  public setEvent(event: string | boolean | null) {
     if (typeof event === 'boolean') {
       this.event = event;
     } else {
@@ -59,7 +60,7 @@ export class Response {
   }
 
   public isHeartbeat() {
-    return this.event && !this.result;
+    return this.event && this.result === Constants.HEARTBEAT_EVENT;
   }
 
   public getResult() {

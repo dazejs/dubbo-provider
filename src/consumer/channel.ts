@@ -5,6 +5,7 @@ import { Codec } from '../codec';
 import { Invocation, Request } from '../request';
 import { Response, Result } from '../response';
 import { Consumer } from './consumer';
+import { Constants } from '../common/constants';
 
 export class Channel {
   /**
@@ -212,10 +213,9 @@ export class Channel {
         if (readTime > heartbeat || writeTime > heartbeat) {
           this.setLastWriteTimestamp();
           const req = new Request();
-          req.setEvent(true);
+          req.setEvent(Constants.HEARTBEAT_EVENT);
           const payload = this.codec.encode(req);
-          if (!payload) return;
-          return this.send(payload);
+          payload && this.send(payload);
         }
         if (readTime > heartbeatTimeout) {
           this.heartbeatFails++;
@@ -306,15 +306,16 @@ export class Channel {
     const reses = this.codec.decode(buffer) ?? [];
     for (const res of reses) {
       if (res instanceof Response) {
-        const requestId = res.getId();
-        if (!this.callbacks.has(requestId)) console.log(12312434, res.isEvent());
-        if (this.callbacks.has(requestId)) {
-          const fn = this.callbacks.get(requestId);
-          const result = res.getResult();
-          if (result instanceof Result) {
-            fn(result.getValue());
-          } else {
-            fn(result);
+        if (!res.isHeartbeat()) {
+          const requestId = res.getId();
+          if (this.callbacks.has(requestId)) {
+            const fn = this.callbacks.get(requestId);
+            const result = res.getResult();
+            if (result instanceof Result) {
+              fn(result.getValue());
+            } else {
+              fn(result);
+            }
           }
         }
       }

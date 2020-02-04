@@ -1,3 +1,4 @@
+import { Constants } from '../common/constants';
 
 let id = 0;
 
@@ -39,7 +40,7 @@ export class Request {
     return this.event;
   }
 
-  public setEvent(event: string | boolean) {
+  public setEvent(event: string | boolean | null) {
     if (typeof event === 'boolean') {
       this.event = event;
     } else {
@@ -53,8 +54,14 @@ export class Request {
   }
 
   public isHeartbeat() {
-    return this.event && !this.data;
+    return this.event && this.data === Constants.HEARTBEAT_EVENT;
   }
+
+  // public setHeartbeat(isHeartbeat: boolean) {
+  //   if (isHeartbeat) {
+  //     this.setEvent(Constants.HEARTBEAT_EVENT);
+  //   }
+  // }
 
   public getData() {
     return this.data;

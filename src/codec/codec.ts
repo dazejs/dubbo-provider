@@ -64,7 +64,6 @@ export class Codec {
    */
   decode(buffer: Buffer) {
     this.packet = Buffer.concat([this.packet, buffer], this.packet.length + buffer.length);
-    // let length = this.packet.length;
     const chunks: (Request | Response)[] = [];
     while (this.packet.length >= Codec.HEADER_LENGTH) {
       // check magic number.
@@ -79,17 +78,12 @@ export class Codec {
       if (this.packet[0] === Codec.MAGIC_HIGH && this.packet[1] === Codec.MAGIC_LOW) {
         if (this.packet.length < Codec.HEADER_LENGTH) return chunks;
         const header = this.packet.slice(0, Codec.HEADER_LENGTH);
-        const bodyLengthBuffer = Buffer.from([
-          header[12],
-          header[13],
-          header[14],
-          header[15],
-        ]);
+        const bodyLengthBuffer = Buffer.allocUnsafe(4);
+        header.copy(bodyLengthBuffer, 0, 12, 16);
         const bodyLength = Bytes.fromBytes4(bodyLengthBuffer);
         if (Codec.HEADER_LENGTH + bodyLength > this.packet.length) break;
         const chunkBuffer = this.packet.slice(0, Codec.HEADER_LENGTH + bodyLength);
         this.packet = this.packet.slice(Codec.HEADER_LENGTH + bodyLength);
-        // length = packet.length;
         chunks.push(
           this.decodeBody(chunkBuffer)
         );
@@ -116,10 +110,15 @@ export class Codec {
       const status = dataBuffer[3];
       res.setStatus(status);
       if (status === Response.OK) {
+        let data: any;
         const input = new Hessian.DecoderV2(dataBuffer.slice(Codec.HEADER_LENGTH));
-        const result = new DecodeableResult(input);
-        result.decode();
-        res.setResult(result);
+        if (res.isEvent()) {
+          data = this.decodeEventData(input);
+        } else {
+          const result = new DecodeableResult(input);
+          data = result.decode();
+        }
+        res.setResult(data);
       }
       return res;
     } else {
