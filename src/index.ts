@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import * as decorators from './decorators';
 import js2java from 'js-to-java';
 
