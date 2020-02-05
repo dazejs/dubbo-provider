@@ -32,9 +32,6 @@ export class ZookeeperRegistry extends Registry {
      */
   private heartbeatCheckTimer: NodeJS.Timer;
 
-
-  private heartbeatFailCount = 0;
-
   /**
    * 创建注册实例
    * @param options 
@@ -102,17 +99,13 @@ export class ZookeeperRegistry extends Registry {
       switch (state) {
         case zookeeper.State.EXPIRED:
         case zookeeper.State.DISCONNECTED:
-          this.heartbeatFailCount++;
-          log(`heartbeat: The automatic heartbeat check failed, failures count: ${this.heartbeatFailCount}`);
+          log('heartbeat: Automatic heartbeat check mechanism detects abnormal connection, ready to reconnect');
+          this.reconnect();
           break;
         default:
           this.heartbeatFailCount = 0;
           log('heartbeat: The automatic heartbeat check success');
           break;
-      }
-      if (this.heartbeatFailCount >= 3) {
-        log('heartbeat: Automatic heartbeat check mechanism detects abnormal connection, ready to reconnect');
-        this.reconnect();
       }
     }, 20000);
   }
