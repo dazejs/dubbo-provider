@@ -28,13 +28,20 @@ export class ZookeeperRegistry extends Registry {
   options: ZookeeperRegistryOptions;
 
   /**
+     * 健康检查定时器
+     */
+  private heartbeatCheckTimer: NodeJS.Timer;
+
+
+  private heartbeatFailCount = 0;
+
+  /**
    * 创建注册实例
    * @param options 
    */
   constructor(options: ZookeeperRegistryOptions) {
     super();
     this.options = options;
-    this.client = zookeeper.createClient(options.host, {});
   }
 
   /**
@@ -43,13 +50,83 @@ export class ZookeeperRegistry extends Registry {
   connect(): Promise<void> {
     log(`connecting zookeeper server: [${this.options.host}]`);
     return new Promise((resolve) => {
+      // node-zookeeper-client 当连不上zk时会无限重连
+      // 所以这里需要做手动超时检测
+      const timeId = setTimeout(() => {
+        log('Connection timeout, unable to establish connection with server');
+        this.reconnect();
+      }, 30000);
+
+      if (this.client) {
+        this.client.removeAllListeners();
+      }
+      this.client = zookeeper.createClient(this.options.host, {});
+
       this.client.once('connected', () => {
+        clearTimeout(timeId);
         log(`zookeeper server connected`);
         this.connected = true;
+        this.setupHeartbeat();
         resolve();
       });
+
+      this.client.on('disconnected', () => {
+        clearTimeout(timeId);
+        log('Disconnected from server');
+        this.reconnect();
+      });
+
+      this.client.once('expired', () => {
+        clearTimeout(timeId);
+        log('Session expired, closing the connection');
+        // 检测到 session 过期后，主动断开连接
+        // 触发 disconnected 事件，进行重连
+        this.connected = false;
+        this.client.close();
+      });
+      log('Connecting to server');
       this.client.connect();
     });
+  }
+
+  /**
+   * 开启心跳检测
+   */
+  private setupHeartbeat() {
+    if (this.heartbeatCheckTimer) {
+      clearInterval(this.heartbeatCheckTimer);
+    }
+    log('Start the heartbeat detection function');
+    this.heartbeatCheckTimer = setInterval(() => {
+      const state = this.client.getState();
+      switch (state) {
+        case zookeeper.State.EXPIRED:
+        case zookeeper.State.DISCONNECTED:
+          this.heartbeatFailCount++;
+          log(`heartbeat: The automatic heartbeat check failed, failures count: ${this.heartbeatFailCount}`);
+          break;
+        default:
+          this.heartbeatFailCount = 0;
+          log('heartbeat: The automatic heartbeat check success');
+          break;
+      }
+      if (this.heartbeatFailCount >= 3) {
+        log('heartbeat: Automatic heartbeat check mechanism detects abnormal connection, ready to reconnect');
+        this.reconnect();
+      }
+    }, 20000);
+  }
+
+  reconnect() {
+    if (this.heartbeatCheckTimer) {
+      clearInterval(this.heartbeatCheckTimer);
+    }
+    log('reconnect: Trying to reconnect with the server...');
+    if (this.client && this.connected) {
+      this.connected = false;
+      this.client.close();
+    }
+    return this.connect();
   }
 
   /**

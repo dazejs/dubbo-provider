@@ -1,4 +1,5 @@
-import { DubboProvider, dubbo } from '@dazejs/dubbo-provider';
+// ts-ignore
+import { DubboProvider, dubbo } from '../../../../src';
 
 @dubbo.registry('default')
 @dubbo.interfaceName('com.daze.dubbo.service.Demo')
