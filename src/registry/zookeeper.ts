@@ -28,8 +28,8 @@ export class ZookeeperRegistry extends Registry {
   options: ZookeeperRegistryOptions;
 
   /**
-     * 健康检查定时器
-     */
+   * 健康检查定时器
+   */
   private heartbeatCheckTimer: NodeJS.Timer;
 
   /**
@@ -103,7 +103,6 @@ export class ZookeeperRegistry extends Registry {
           this.reconnect();
           break;
         default:
-          this.heartbeatFailCount = 0;
           log('heartbeat: The automatic heartbeat check success');
           break;
       }
