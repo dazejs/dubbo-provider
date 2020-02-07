@@ -1,0 +1,44 @@
+name: Dubbo CI
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      zookeeper:
+        image: zookeeper:3.4
+        ports:
+          - 2181:2181
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12
+    - name: Setup java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+    - name: Build Java
+      run: |
+        cd __test__/java/dubbo-demo
+        mvn clean install
+    - name: Run Java Dubbo Provider
+      run: |
+        cd __test__/java/dubbo-demo/dubbo-demo-provider/target
+        nohup java -jar dubbo-demo-provider-2.6.3-jar-with-dependencies.jar &
+    - name: Run Test
+      run: |
+        npm run test:coverage
