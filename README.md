@@ -5,7 +5,12 @@
 [![codecov](https://codecov.io/gh/dazejs/dubbo-provider/branch/master/graph/badge.svg)](https://codecov.io/gh/dazejs/dubbo-provider)
 [![GitHub license](https://img.shields.io/github/license/dazejs/dubbo-provider.svg)](https://github.com/dazejs/dubbo-provider/blob/master/LICENSE)
 
-# Dubbo 服务
+<div align="center">
+  <a href="https://github.com/dazejs/dubbo-provider">
+    <img width="600" heigth="300" src="https://github.com/dazejs/dubbo-provider/blob/master/assets/logo.png">
+  </a>  
+  <h1>Dubbo for Daze.js</h1>
+</div>
 
 ## 简介
 
