@@ -1,3 +1,9 @@
+[![GitHub issues](https://img.shields.io/github/issues/dazejs/dubbo-provider.svg)](https://github.com/dazejs/dubbo-provider/issues)
+[![npm](https://img.shields.io/npm/v/@dazejs/dubbo-provider.svg)](https://www.npmjs.com/package/@dazejs/dubbo-provider)
+[![npm](https://img.shields.io/npm/dm/@dazejs/dubbo-provider.svg)](https://www.npmjs.com/package/@dazejs/dubbo-provider)
+[![actions](https://github.com/dazejs/dubbo-provider/workflows/Dubbo%20CI/badge.svg?branch=master)](https://github.com/dazejs/dubbo-provider/actions)
+[![GitHub license](https://img.shields.io/github/license/dazejs/dubbo-provider.svg)](https://github.com/dazejs/dubbo-provider/blob/master/LICENSE)
+
 # Dubbo 服务
 
 ## 简介
