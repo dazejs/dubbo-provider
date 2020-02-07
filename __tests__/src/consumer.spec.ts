@@ -12,3 +12,9 @@ describe('consumer for java provider', () => {
     await request(app._server).get('/java/say-hello').expect(200, 'Hello dazejs');
   });
 });
+
+describe('consumer for daze provider', () => {
+  it('should invoke daze provider success', async () => {
+    await request(app._server).get('/daze/say-hello').expect(200, 'Hello dazejs');
+  });
+});

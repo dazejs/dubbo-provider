@@ -2,6 +2,7 @@
 [![npm](https://img.shields.io/npm/v/@dazejs/dubbo-provider.svg)](https://www.npmjs.com/package/@dazejs/dubbo-provider)
 [![npm](https://img.shields.io/npm/dm/@dazejs/dubbo-provider.svg)](https://www.npmjs.com/package/@dazejs/dubbo-provider)
 [![actions](https://github.com/dazejs/dubbo-provider/workflows/Dubbo%20CI/badge.svg?branch=master)](https://github.com/dazejs/dubbo-provider/actions)
+[![codecov](https://codecov.io/gh/dazejs/dubbo-provider/branch/master/graph/badge.svg)](https://codecov.io/gh/dazejs/dubbo-provider)
 [![GitHub license](https://img.shields.io/github/license/dazejs/dubbo-provider.svg)](https://github.com/dazejs/dubbo-provider/blob/master/LICENSE)
 
 # Dubbo 服务

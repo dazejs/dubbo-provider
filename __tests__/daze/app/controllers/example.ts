@@ -9,14 +9,14 @@ export default class extends Controller {
 
   @inject(JavaConsumer as any) javaConsumer: JavaConsumer;
 
-  @http.get()
-  async index() {
-    const res = await this.demoConsumer.invoke('sayHello', ['yyy']);
+  @http.get('/daze/say-hello')
+  async say1() {
+    const res = await this.demoConsumer.invoke('sayHello', ['dazejs']);
     return res;
   }
 
   @http.get('/java/say-hello')
-  async say() {
+  async say2() {
     const res = await this.javaConsumer.invoke('sayHello', ['dazejs']);
     return res;
   }

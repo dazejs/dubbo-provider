@@ -31,9 +31,6 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Setup hosts
-      run: |
-        sudo echo "127.0.0.1 zookeeper" >> /etc/hosts
     - name: Build Java
       run: |
         cd __tests__/java/dubbo-demo
@@ -49,3 +46,6 @@ jobs:
     - name: Run Test
       run: |
         npm run test:coverage
+    - name: Codecov
+      run: |
+        ./node_modules/.bin/codecov -t 599e926f-4ce9-47d5-8fbd-a4f9194b1a39
