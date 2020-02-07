@@ -13,7 +13,7 @@ services:
     depends_on:
       - zookeeper
     environment:
-      DUBBO_IP_TO_REGISTRY: "192.168.2.145"
+      DUBBO_IP_TO_REGISTRY: "192.168.0.104"
       DUBBO_PORT_TO_REGISTRY: 20881
     volumes:
       - ../dubbo-demo:/dubbo-demo
@@ -21,32 +21,32 @@ services:
     links:
       - zookeeper
 
-  dubbo2:
-    image: maven:3-jdk-8
-    ports:
-      - "20882:20880"
-    depends_on:
-      - zookeeper
-    environment:
-      DUBBO_IP_TO_REGISTRY: "192.168.2.145"
-      DUBBO_PORT_TO_REGISTRY: 20882
-    volumes:
-      - ../dubbo-demo:/dubbo-demo
-    command: nohup java -jar /dubbo-demo/dubbo-demo-provider/target/dubbo-demo-provider-2.6.3-jar-with-dependencies.jar &
-    links:
-      - zookeeper
+  # dubbo2:
+  #   image: maven:3-jdk-8
+  #   ports:
+  #     - "20882:20880"
+  #   depends_on:
+  #     - zookeeper
+  #   environment:
+  #     DUBBO_IP_TO_REGISTRY: "192.168.0.104"
+  #     DUBBO_PORT_TO_REGISTRY: 20882
+  #   volumes:
+  #     - ../dubbo-demo:/dubbo-demo
+  #   command: nohup java -jar /dubbo-demo/dubbo-demo-provider/target/dubbo-demo-provider-2.6.3-jar-with-dependencies.jar &
+  #   links:
+  #     - zookeeper
 
-  dubbo3:
-    image: maven:3-jdk-8
-    ports:
-      - "20883:20880"
-    depends_on:
-      - zookeeper
-    environment:
-      DUBBO_IP_TO_REGISTRY: "192.168.2.145"
-      DUBBO_PORT_TO_REGISTRY: 20883
-    volumes:
-      - ../dubbo-demo:/dubbo-demo
-    command: nohup java -jar /dubbo-demo/dubbo-demo-provider/target/dubbo-demo-provider-2.6.3-jar-with-dependencies.jar &
-    links:
-      - zookeeper
+  # dubbo3:
+  #   image: maven:3-jdk-8
+  #   ports:
+  #     - "20883:20880"
+  #   depends_on:
+  #     - zookeeper
+  #   environment:
+  #     DUBBO_IP_TO_REGISTRY: "192.168.0.104"
+  #     DUBBO_PORT_TO_REGISTRY: 20883
+  #   volumes:
+  #     - ../dubbo-demo:/dubbo-demo
+  #   command: nohup java -jar /dubbo-demo/dubbo-demo-provider/target/dubbo-demo-provider-2.6.3-jar-with-dependencies.jar &
+  #   links:
+  #     - zookeeper

@@ -182,7 +182,24 @@ export class Consumer {
    * @param args 
    */
   async invoke<T = any>(method: string, args: any[] = []): Promise<T> {
-    const channels: Channel[] = Array.from(this.channels.values());
+    let channels: Channel[] = Array.from(this.channels.values());
+    if (channels.length === 0) {
+      channels = await new Promise(resolve => {
+        const time = Date.now();
+        const timer = setInterval(() => {
+          if (Date.now() - time >= 3000) {
+            clearInterval(timer);
+            return resolve([]);
+          }
+          const _channels = Array.from(this.channels.values());
+          if (_channels.length) {
+            clearInterval(timer);
+            return resolve(_channels);
+          }
+        }, 30);
+      });
+    }
+
     if (channels.length === 0) throw new Error('no providers');
     // 找到负载最低的通道进行调用
     let _picedkChannel: Channel = channels[0];
@@ -233,6 +250,7 @@ export class Consumer {
     const hasProvider = await this.registry.exists(this.getRegistryProviderRootPath());
     if (!hasProvider) throw new Error(`no providers on ${this.interfaceName}`);
     const children = await this.registry.children(this.getRegistryProviderRootPath(), e => this.notify(id, e));
+
     if (!children) return result;
     for (const child of children) {
       const url = new URL(decodeURIComponent(child));

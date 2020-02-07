@@ -5,15 +5,12 @@ import { Metadata } from '@dazejs/framework';
  *
  * @returns {ClassDecorator}
  */
-export function InterfaceName(name: string): ClassDecorator {
+export function Interface(name: string, version?: string): ClassDecorator {
   return function <TFunction extends Function> (target: TFunction): TFunction {
     const dubbo: DubboMetadataStruct = Metadata.get('dubbo', target) || {};
     dubbo.interfaceName = name;
+    dubbo.interfaceVersion = version;
     Metadata.set('dubbo', dubbo, target);
     return target;
   };
-}
-
-export function interfaceName(name: string): ClassDecorator {
-  return InterfaceName(name);
 }
