@@ -136,6 +136,7 @@ export class Consumer {
     if (this.interfaceGroup !== '-') url.searchParams.append('group', this.interfaceGroup);
 
     const consumerUrl = urlFormat(url);
+    await this.registry.create(`/${this.root}`, '', 0);
     await this.registry.create(this.registryRootPath, '', 0);
     await this.registry.create(this.registryCatePath, '', 0);
     await this.registry.create(this.getRegistryConsumerPath(consumerUrl), ipAddress, 0);
@@ -229,9 +230,10 @@ export class Consumer {
    */
   async getChildren(id: string) {
     const result: Map<string, URL> = new Map();
+    const hasProvider = await this.registry.exists(this.getRegistryProviderRootPath());
+    if (!hasProvider) throw new Error(`no providers on ${this.interfaceName}`);
     const children = await this.registry.children(this.getRegistryProviderRootPath(), e => this.notify(id, e));
     if (!children) return result;
-
     for (const child of children) {
       const url = new URL(decodeURIComponent(child));
       const interfaceName = url.searchParams.get('interface');

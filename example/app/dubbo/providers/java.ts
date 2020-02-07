@@ -1,5 +1,5 @@
 // ts-ignore
-import { DubboConsumer, dubbo } from '../../../../../src';
+import { DubboConsumer, dubbo } from '../../../../src';
 
 @dubbo.registry('default')
 @dubbo.interfaceName('com.alibaba.dubbo.demo.DemoProvider')
