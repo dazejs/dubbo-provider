@@ -28,9 +28,9 @@ jobs:
       with:
         node-version: 12
     - name: Setup java
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
     - name: Build Java
       run: |
         cd __test__/java/dubbo-demo
