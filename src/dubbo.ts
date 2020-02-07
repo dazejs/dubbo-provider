@@ -101,7 +101,9 @@ export class Dubbo {
       dubboProvider,
       {
         interface: interfaceName,
-        methods: methodNames
+        methods: methodNames,
+        version: dubboMetadata.interfaceVersion,
+        group: dubboMetadata.interfaceGroup,
       }
     );
     await provider.listen();
