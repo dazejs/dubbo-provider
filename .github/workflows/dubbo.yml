@@ -31,6 +31,9 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: Setup hosts
+      run: |
+        echo "127.0.0.1 zookeeper" > /etc/hosts
     - name: Build Java
       run: |
         cd __tests__/java/dubbo-demo
