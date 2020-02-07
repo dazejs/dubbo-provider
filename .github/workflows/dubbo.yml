@@ -39,6 +39,10 @@ jobs:
       run: |
         cd __test__/java/dubbo-demo/dubbo-demo-provider/target
         nohup java -jar dubbo-demo-provider-2.6.3-jar-with-dependencies.jar &
+    - name: Install Node Dependences 
+      run: |
+        npm install
+        npm install codecov
     - name: Run Test
       run: |
         npm run test:coverage
