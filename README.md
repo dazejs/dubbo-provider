@@ -9,7 +9,8 @@
   <a href="https://github.com/dazejs/dubbo-provider">
     <img width="600" heigth="300" src="https://github.com/dazejs/dubbo-provider/blob/master/assets/logo.png">
   </a>  
-  <h2>Dubbo for Daze.js</h2>
+  <h2>Dubbo</h2>
+  <h4>基于 Daze.js 的 Dubbo 服务扩展</h4>
 </div>
 
 ## 简介
