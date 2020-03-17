@@ -122,7 +122,7 @@ export class Dubbo {
     await this.setupRegistry(registryName, type, options);
 
     const interfaceName = dubboMetadata.interfaceName;
-    if (!interfaceName) throw new Error('The dubbo provider must have inerface name!');
+    if (!interfaceName) throw new Error('The dubbo consumer must have inerface name!');
 
     const registry = this.registries.get(registryName);
     if (!registry) throw new Error(`No registry was found with registry name: [${registryName}]!`);

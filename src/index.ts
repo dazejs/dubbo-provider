@@ -8,6 +8,5 @@ export * from './base';
 export const dubbo = {
   ...decorators,
   interface: Interface,
-  Interface,
 };
 export const java = js2java;

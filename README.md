@@ -65,7 +65,7 @@ export default {
 import { DubboProvider, dubbo } from '@dazejs/dubbo-provider';
 
 @dubbo.registry('default')
-@dubbo.interfaceName('com.daze.dubbo.service.Demo')
+@dubbo.interface('com.daze.dubbo.service.Demo')
 export default class extends DubboProvider {
   @dubbo.method()
   sayHello(name: string) {
@@ -82,7 +82,7 @@ export default class extends DubboProvider {
 import { DubboConsumer, dubbo } from '@dazejs/dubbo-provider';
 
 @dubbo.registry('default')
-@dubbo.interfaceName('com.daze.dubbo.service.Demo')
+@dubbo.interface('com.daze.dubbo.service.Demo')
 export default class extends DubboConsumer {
 }
 ```
@@ -90,11 +90,10 @@ export default class extends DubboConsumer {
 ##### 注入并使用
 
 ```ts
-import { Controller, route, http, inject } from '@dazejs/framework';
+import { Controller, http, inject } from '@dazejs/framework';
 import { java } from '@dazejs/dubbo-provider';
 import DemoConsumer from '../dubbo/consumers/demo';
 
-@route()
 export default class extends Controller {
 
   @inject(DemoConsumer) demoConsumer: DemoConsumer;

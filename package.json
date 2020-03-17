@@ -1,19 +1,18 @@
 {
   "name": "@dazejs/dubbo-provider",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "dubbo service for dazejs",
   "main": "dist/index.js",
   "scripts": {
     "start": "npm run dev",
-    "dev": "cross-env DAZE_ENV=dev DEBUG=dubbo-provider:* nodemon --signal SIGTERM --exec ts-node src/index.ts --source-map --preserve-symlinks",
+    "dev": "cross-env DAZE_ENV=dev DEBUG=dubbo-provider:* nodemon --signal SIGTERM --exec ts-node example/index.ts --source-map --preserve-symlinks",
     "build": "tsc",
     "watch": "tsc -w",
     "prod": "cross-env DAZE_ENV=prod node dist/index.js",
     "test": "jest --verbose --runInBand --forceExit",
     "test:coverage": "jest --runInBand --forceExit --coverage",
-    "example": "cross-env DAZE_ENV=prod DEBUG=dubbo-provider:* nodemon --signal SIGTERM --exec ts-node example/index.ts --source-map --preserve-symlinks",
     "commitlint": "commitlint -e $GIT_PARAMS",
-    "prepublish": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "publishConfig": {
     "access": "public"
@@ -22,7 +21,8 @@
     "node": ">=10.15.0"
   },
   "peerDependencies": {
-    "@dazejs/framework": ">=2.6.0"
+    "@dazejs/framework": ">=2.6.0",
+    "reflect-metadata": ">=0.1.12"
   },
   "devDependencies": {
     "@commitlint/cli": "8.3.5",
@@ -43,6 +43,7 @@
     "husky": "4.2.1",
     "jest": "25.1.0",
     "nodemon": "2.0.2",
+    "reflect-metadata": "0.1.13",
     "supertest": "4.0.2",
     "ts-jest": "25.2.1",
     "ts-node": "8.4.1",
