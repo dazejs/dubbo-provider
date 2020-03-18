@@ -113,6 +113,7 @@ export class Service {
     url.hostname = ipAddress;
     url.port = `${this.provider.port}`;
     url.searchParams.append('anyhost', 'true');
+    url.searchParams.append('codec', 'dubbo');
     url.searchParams.append('application', this.provider.application);
     url.searchParams.append('category', 'providers');
     url.searchParams.append('dubbo', this.provider.version);

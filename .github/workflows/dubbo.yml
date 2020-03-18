@@ -48,4 +48,4 @@ jobs:
         npm run test:coverage
     - name: Codecov
       run: |
-        ./node_modules/.bin/codecov -t 599e926f-4ce9-47d5-8fbd-a4f9194b1a39
+        ./node_modules/.bin/codecov -t ${{ secrets.CODECOV_TOKEN }}

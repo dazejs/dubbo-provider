@@ -1,9 +1,0 @@
-com/alibaba/dubbo/demo/Demo2Provider.class
-com/alibaba/dubbo/demo/Sex.class
-com/alibaba/dubbo/demo/UserResponse.class
-com/alibaba/dubbo/demo/BasicTypeProvider.class
-com/alibaba/dubbo/demo/ErrorProvider.class
-com/alibaba/dubbo/demo/CustomizeException.class
-com/alibaba/dubbo/demo/DemoProvider.class
-com/alibaba/dubbo/demo/UserRequest.class
-com/alibaba/dubbo/demo/TypeRequest.class
