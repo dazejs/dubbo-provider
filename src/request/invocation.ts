@@ -1,5 +1,3 @@
-import { Consumer } from '../consumer/consumer';
-
 const PRIMITIVE_TYPE_REF: Record<string, string> = {
   void: 'V',
   boolean: 'Z',
@@ -23,17 +21,13 @@ export class Invocation {
 
   private parameterTypesDesc: string;
 
-  private consumer?: Consumer
-
   constructor(
     methodName?: string,
     args?: any[],
     attachments?: Record<string, any>,
-    consumer?: Consumer,
   ) {
     this.methodName = methodName;
     this.args = args;
-    this.consumer = consumer;
     this.attachments = attachments ?? {};
     this.initParameterDesc();
   }
@@ -44,10 +38,6 @@ export class Invocation {
 
   public setMethodName(methodName: string) {
     this.methodName = methodName;
-  }
-
-  public getConsumer() {
-    return this.consumer;
   }
 
   public get(key: string) {

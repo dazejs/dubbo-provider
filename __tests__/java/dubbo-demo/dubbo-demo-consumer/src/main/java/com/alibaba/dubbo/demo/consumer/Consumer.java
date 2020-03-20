@@ -13,7 +13,7 @@ public class Consumer {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
         context.start();
 
-        DemoProvider demoService = (DemoProvider) context.getBean("demoProvider"); // 获取远程服务代理
+        NodeDemoProvider demoService = (NodeDemoProvider) context.getBean("demoProvider"); // 获取远程服务代理
 
         String hello = demoService.sayHello("world"); // 执行远程方法
 //

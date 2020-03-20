@@ -15,7 +15,7 @@ export class Request {
   private version?: string;
 
   constructor(id?: number) {
-    if (id) this.id = id;
+    if (id !== undefined) this.id = id;
     else this.id = this.newId();
   }
 
