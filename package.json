@@ -52,7 +52,7 @@
   "dependencies": {
     "compare-versions": "3.6.0",
     "debug": "4.1.1",
-    "hessian.js": "2.9.0",
+    "hessian.js": "2.10.0",
     "js-to-java": "2.6.1",
     "node-zookeeper-client": "1.1.0"
   }
