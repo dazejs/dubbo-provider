@@ -7,7 +7,7 @@ export class IP {
   static address() {
     const interfaces = os.networkInterfaces();
     const all = Object.keys(interfaces).map(key => {
-      const addresses = interfaces[key].filter(details => details.family.toLowerCase() === 'ipv4' && !this.isLoopback(details.address));
+      const addresses = interfaces?.[key]?.filter(details => details.family.toLowerCase() === 'ipv4' && !this.isLoopback(details.address));
       return addresses?.[0]?.address;
     }).filter(Boolean);
     return all[0];

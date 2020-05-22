@@ -1,7 +1,8 @@
-import { Controller, http, inject } from '@dazejs/framework';
+import { BaseController, controller, http, inject } from '@dazejs/framework';
 import DemoConsumer from '../dubbo/consumers/demo';
 
-export default class extends Controller {
+@controller()
+export class ExampleController extends BaseController {
 
   @inject(DemoConsumer as any) demoConsumer: DemoConsumer;
 
