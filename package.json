@@ -30,7 +30,7 @@
     "@dazejs/framework": "3.0.0",
     "@types/compare-versions": "3.3.0",
     "@types/debug": "4.1.5",
-    "@types/jest": "25.1.2",
+    "@types/jest": "26.0.24",
     "@types/js-to-java": "2.4.0",
     "@types/node": "13.13.0",
     "@types/node-zookeeper-client": "0.2.7",
