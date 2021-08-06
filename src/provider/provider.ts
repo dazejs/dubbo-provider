@@ -206,7 +206,7 @@ export class Provider {
     await new Promise((resolve, reject) => {
       this.server.listen(this.port, (err?: Error) => {
         if (err) return reject(err);
-        return resolve();
+        return resolve(true);
       });
     });
     await this.publish();

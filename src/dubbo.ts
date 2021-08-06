@@ -73,6 +73,7 @@ export class Dubbo {
     const dubboMetadata: DubboMetadataStruct = Reflect.getMetadata('dubbo', DubboProvider) ?? {};
     const methods: Map<string, DubboMethodMetadataStruct> = Reflect.getMetadata('dubbo.methods', DubboProvider) ?? {};
     const registryName = dubboMetadata.registry ?? 'default';
+    const customIP =  this.app.get('config').get(`dubbo.ip`, '');
     const { type = 'zookeeper', port = 20880, ...options } = this.app.get('config').get(`dubbo.${dubboMetadata.registry}`, {});
 
     await this.setupRegistry(registryName, type, options);
@@ -104,6 +105,7 @@ export class Dubbo {
         methods: methodNames,
         version: dubboMetadata.interfaceVersion,
         group: dubboMetadata.interfaceGroup,
+        customIP
       }
     );
     await provider.listen();
@@ -117,6 +119,7 @@ export class Dubbo {
     // dubbo metadata
     const dubboMetadata: DubboMetadataStruct = Reflect.getMetadata('dubbo', DubboConsumer) ?? {};
     const registryName = dubboMetadata.registry ?? 'default';
+    const customIP =  this.app.get('config').get(`dubbo.ip`, '');
     const { type = 'zookeeper', ...options } = this.app.get('config').get(`dubbo.${dubboMetadata.registry}`, {});
     delete options.port;
     await this.setupRegistry(registryName, type, options);
@@ -135,7 +138,8 @@ export class Dubbo {
       version: dubboMetadata.version,
       interfaceName,
       interfaceGroup: dubboMetadata.interfaceGroup,
-      interfaceVersion: dubboMetadata.interfaceVersion
+      interfaceVersion: dubboMetadata.interfaceVersion,
+      customIP
     }]);
     await consumer.register();
     await consumer.subscribe(id);

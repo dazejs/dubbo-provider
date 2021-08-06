@@ -14,6 +14,7 @@ export interface ProviderServiceOption {
   retries?: number;
   timeout?: number;
   description?: string;
+  customIP?: string;
 }
 
 export class Service {
@@ -66,6 +67,11 @@ export class Service {
    * method handler
    */
   handler?: DubboProviderBase;
+
+  /**
+   * 自定义 IP 地址
+   */
+  customIP?: string;
   
   /**
    * Create Service instance
@@ -82,6 +88,7 @@ export class Service {
     this.interfaceDelay = options.delay ?? -1;
     this.interfaceRetries = options.retries ?? 2;
     this.interfaceTimout = options.timeout ?? 3000;
+    this.customIP = options.customIP;
   }
 
   /**
@@ -109,7 +116,7 @@ export class Service {
    */
   async register(): Promise<this> {
     const url = new URL('dubbo://');
-    const ipAddress = IP.address() || '';
+    const ipAddress = this.customIP || IP.address() || '';
     url.hostname = ipAddress;
     url.port = `${this.provider.port}`;
     url.searchParams.append('anyhost', 'true');

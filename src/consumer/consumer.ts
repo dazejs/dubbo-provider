@@ -13,6 +13,7 @@ export interface ConsumerOptions {
   interfaceName: string;
   interfaceVersion?: string;
   interfaceGroup?: string;
+  customIP?: string;
 }
 
 export class Consumer {
@@ -68,6 +69,11 @@ export class Consumer {
   registry: Registry;
 
   /**
+   * 自定义 IP 地址
+   */
+  customIP?: string;
+
+  /**
    * 创建实例
    * @param consumer 
    * @param interfaceName 
@@ -84,6 +90,7 @@ export class Consumer {
     this.version = options.version ?? '0.0.0';
     this.registryRootPath = `/${options.root ?? 'dubbo'}/${options.interfaceName}`;
     this.registryCatePath = `${this.registryRootPath}/consumers`;
+    this.customIP = options.customIP;
   }
 
   /**
@@ -122,7 +129,7 @@ export class Consumer {
   async register() {
     const url = new URL('consumer://');
 
-    const ipAddress = IP.address() || '';
+    const ipAddress = this.customIP || IP.address() || '';
     url.host = `${ipAddress}/${this.interfaceName}`;
     url.searchParams.append('application', this.application);
     url.searchParams.append('category', 'consumers');
