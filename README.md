@@ -55,6 +55,18 @@ export default {
 }
 ```
 
+自定义服务器IP地址(默认自动获取,某些情况下自动获取的IP地址可能不正确), 在刚才的配置文件中新增属性：
+
+```ts
+export default {
+  // ...
+  ip: '100.100.100.100'
+  //...
+}
+```
+
+也可以使用 `@dubbo.ip('100.100.100.100')` 来为每个消费者或者提供者单独设置(优先级大于全局)
+
 ## 使用
 
 ### 服务端 (Provider)
@@ -66,6 +78,7 @@ import { DubboProvider, dubbo } from '@dazejs/dubbo-provider';
 
 @dubbo.registry('default')
 @dubbo.interface('com.daze.dubbo.service.Demo')
+@dubbo.ip('100.100.100.100') // 自定义 ip 地址，一般情况下无需使用，自动获取即可
 export default class extends DubboProvider {
   @dubbo.method()
   sayHello(name: string) {
