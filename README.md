@@ -65,6 +65,8 @@ export default {
 }
 ```
 
+也可以使用 `@dubbo.ip('100.100.100.100')` 来为每个消费者或者提供者单独设置
+
 ## 使用
 
 ### 服务端 (Provider)
@@ -76,6 +78,7 @@ import { DubboProvider, dubbo } from '@dazejs/dubbo-provider';
 
 @dubbo.registry('default')
 @dubbo.interface('com.daze.dubbo.service.Demo')
+@dubbo.ip('100.100.100.100') // 自定义 ip 地址，一般情况下无需使用，自动获取即可
 export default class extends DubboProvider {
   @dubbo.method()
   sayHello(name: string) {
