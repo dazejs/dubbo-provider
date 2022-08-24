@@ -1,7 +1,7 @@
 {
   "name": "@dazejs/dubbo-provider",
   "version": "1.0.1",
-  "description": "dubbo service for dazejs",
+  "description": "dubbo service for dazejs ",
   "main": "dist/index.js",
   "scripts": {
     "start": "npm run dev",
